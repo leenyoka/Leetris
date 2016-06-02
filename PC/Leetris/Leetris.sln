@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Leetris", "Leetris\Leetris.csproj", "{681EFCE9-EE74-40BE-8E57-3E8B44119C75}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "TetrisSetup", "TetrisSetup\TetrisSetup.vdproj", "{5FCABA80-286B-41F4-B296-DD0D3C2BF368}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{681EFCE9-EE74-40BE-8E57-3E8B44119C75}.Debug|x86.ActiveCfg = Debug|x86
+		{681EFCE9-EE74-40BE-8E57-3E8B44119C75}.Debug|x86.Build.0 = Debug|x86
+		{681EFCE9-EE74-40BE-8E57-3E8B44119C75}.Release|x86.ActiveCfg = Release|x86
+		{681EFCE9-EE74-40BE-8E57-3E8B44119C75}.Release|x86.Build.0 = Release|x86
+		{5FCABA80-286B-41F4-B296-DD0D3C2BF368}.Debug|x86.ActiveCfg = Debug
+		{5FCABA80-286B-41F4-B296-DD0D3C2BF368}.Release|x86.ActiveCfg = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

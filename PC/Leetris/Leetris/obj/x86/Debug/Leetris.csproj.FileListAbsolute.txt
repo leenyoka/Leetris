@@ -1,0 +1,15 @@
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\bin\Debug\Leetris.exe
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\bin\Debug\Leetris.pdb
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\MainWindow.baml
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\MainWindow.g.cs
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\App.g.cs
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\Leetris_MarkupCompile.cache
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\Leetris.g.resources
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\Leetris.Properties.Resources.resources
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\Leetris.exe
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\Leetris.pdb
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\Linda\Desktop\Coded in December\Tetris\Leetris\Leetris\obj\x86\Debug\Leetris_MarkupCompile.lref

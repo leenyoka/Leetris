@@ -1,0 +1,246 @@
+﻿<Window x:Class="Leetris.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="613" Width="496" xmlns:my="clr-namespace:Leetris" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" PreviewKeyDown="Window_PreviewKeyDown" Loaded="Window_Loaded">
+    <Grid>
+        <Button Height="56" HorizontalAlignment="Left" Margin="350,81,0,0" Name="button1" VerticalAlignment="Top" Width="75" Click="button1_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/Leetris;component/Images/Picture7.png" />
+            </Button.Background>
+        </Button>
+        <WrapPanel Height="564" HorizontalAlignment="Left" Margin="20,12,0,0" Name="GridContainer" VerticalAlignment="Top" Width="282">
+            <my:GridBlock Content="2:-4" Height="28" x:Name="gridBlock1" Width="28" Y="2" X="-4" />
+            <my:GridBlock Content="2:-3" Height="28" x:Name="gridBlock2" Width="28" Y="2" X="-3" />
+            <my:GridBlock Content="2:-2" Height="28" x:Name="gridBlock3" Width="28" Y="2" X="-2" />
+            <my:GridBlock Content="2:-1" Height="28" x:Name="gridBlock4" Width="28" Y="2" X="-1" />
+            <my:GridBlock Content="2:0" Height="28" x:Name="gridBlock5" Width="28" Y="2" />
+            <my:GridBlock Content="2:1" Height="28" x:Name="gridBlock6" Width="28" Y="2" X="1" />
+            <my:GridBlock Content="2:2" Height="28" x:Name="gridBlock7" Width="28" Y="2" X="2" />
+            <my:GridBlock Content="2:3" Height="28" x:Name="gridBlock8" Width="28" Y="2" X="3" />
+            <my:GridBlock Content="2:4" Height="28" x:Name="gridBlock9" Width="28" Y="2" X="4" />
+            <my:GridBlock Content="2:5" Height="28" x:Name="gridBlock10" Width="28" Y="2" X="5" />
+            <my:GridBlock Content="1:-4" Height="28" x:Name="gridBlock11" Width="28" Y="1" X="-4" />
+            <my:GridBlock Content="1:-3" Height="28" x:Name="gridBlock12" Width="28" Y="1" X="-3" />
+            <my:GridBlock Content="1:-2" Height="28" x:Name="gridBlock13" Width="28" Y="1" X="-2" />
+            <my:GridBlock Content="1:-1" Height="28" x:Name="gridBlock14" Width="28" Y="1" X="-1" />
+            <my:GridBlock Content="1:0" Height="28" x:Name="gridBlock15" Width="28" Y="1" />
+            <my:GridBlock Content="1:1" Height="28" x:Name="gridBlock16" Width="28" Y="1" X="1" />
+            <my:GridBlock Content="1:2" Height="28" x:Name="gridBlock17" Width="28" Y="1" X="2" />
+            <my:GridBlock Content="1:3" Height="28" x:Name="gridBlock18" Width="28" Y="1" X="3" />
+            <my:GridBlock Content="1:4" Height="28" x:Name="gridBlock19" Width="28" Y="1" X="4" />
+            <my:GridBlock Content="1:5" Height="28" x:Name="gridBlock20" Width="28" Y="1" X="5" />
+            <my:GridBlock Content="0:-4" Height="28" x:Name="gridBlock21" Width="28" Y="0" X="-4" />
+            <my:GridBlock Content="0:-3" Height="28" x:Name="gridBlock22" Width="28" X="-3" />
+            <my:GridBlock Content="0:-2" Height="28" x:Name="gridBlock23" Width="28" X="-2" />
+            <my:GridBlock Content="0:-1" Height="28" x:Name="gridBlock24" Width="28" X="-1" />
+            <my:GridBlock Content="0:0" Height="28" x:Name="gridBlock25" Width="28" />
+            <my:GridBlock Content="0:1" Height="28" x:Name="gridBlock26" Width="28" X="1" />
+            <my:GridBlock Content="0:2" Height="28" x:Name="gridBlock27" Width="28" X="2" />
+            <my:GridBlock Content="0:3" Height="28" x:Name="gridBlock28" Width="28" X="3" />
+            <my:GridBlock Content="0:4" Height="28" x:Name="gridBlock29" Width="28" X="4" />
+            <my:GridBlock Content="0:5" Height="28" x:Name="gridBlock30" Width="28" X="5" />
+            <my:GridBlock Content="-1:-4" Height="28" x:Name="gridBlock31" Width="28" Y="-1" X="-4" />
+            <my:GridBlock Content="-1:-3" Height="28" x:Name="gridBlock32" Width="28" Y="-1" X="-3" />
+            <my:GridBlock Content="-1:-2" Height="28" x:Name="gridBlock33" Width="28" Y="-1" X="-2" />
+            <my:GridBlock Content="-1:-1" Height="28" x:Name="gridBlock34" Width="28" Y="-1" X="-1" />
+            <my:GridBlock Content="-1:0" Height="28" x:Name="gridBlock35" Width="28" Y="-1" />
+            <my:GridBlock Content="-1:1" Height="28" x:Name="gridBlock36" Width="28" Y="-1" X="1" />
+            <my:GridBlock Content="-1:2" Height="28" x:Name="gridBlock37" Width="28" Y="-1" X="2" />
+            <my:GridBlock Content="-1:3" Height="28" x:Name="gridBlock38" Width="28" Y="-1" X="3" />
+            <my:GridBlock Content="-1:4" Height="28" x:Name="gridBlock39" Width="28" Y="-1" X="4" />
+            <my:GridBlock Content="-1:5" Height="28" x:Name="gridBlock40" Width="28" Y="-1" X="5" />
+            <my:GridBlock Content="-2:-4" Height="28" x:Name="gridBlock41" Width="28" Y="-2" X="-4" />
+            <my:GridBlock Content="-2:-3" Height="28" x:Name="gridBlock42" Width="28" Y="-2" X="-3" />
+            <my:GridBlock Content="-2:-2" Height="28" x:Name="gridBlock43" Width="28" Y="-2" X="-2" />
+            <my:GridBlock Content="-2:-1" Height="28" x:Name="gridBlock44" Width="28" Y="-2" X="-1" />
+            <my:GridBlock Content="-2:0" Height="28" x:Name="gridBlock45" Width="28" Y="-2" />
+            <my:GridBlock Content="-2:1" Height="28" x:Name="gridBlock46" Width="28" Y="-2" X="1" />
+            <my:GridBlock Content="-2:2" Height="28" x:Name="gridBlock47" Width="28" Y="-2" X="2" />
+            <my:GridBlock Content="-2:3" Height="28" x:Name="gridBlock48" Width="28" Y="-2" X="3" />
+            <my:GridBlock Content="-2:4" Height="28" x:Name="gridBlock49" Width="28" Y="-2" X="4" />
+            <my:GridBlock Content="-2:5" Height="28" x:Name="gridBlock50" Width="28" Y="-2" X="5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock51" Width="28" X="-4" Y="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock52" Width="28" X="-3" Y="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock53" Width="28" X="-2" Y="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock54" Width="28" X="-1" Y="-3" />
+            <my:GridBlock Content="-3:0" Height="28" x:Name="gridBlock55" Width="28" Y="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock56" Width="28" X="1" Y="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock57" Width="28" X="2" Y="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock58" Width="28" X="3" Y="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock59" Width="28" X="4" Y="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock60" Width="28" X="5" Y="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock61" Width="28" X="-4" Y="-4" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock62" Width="28" X="-3" Y="-4" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock63" Width="28" X="-2" Y="-4" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock64" Width="28" X="-1" Y="-4" />
+            <my:GridBlock Content="-4:0" Height="28" x:Name="gridBlock65" Width="28" Y="-4" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock66" Width="28" X="1" Y="-4" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock67" Width="28" X="2" Y="-4" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock68" Width="28" X="3" Y="-4" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock69" Width="28" X="4" Y="-4" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock70" Width="28" X="5" Y="-4" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock71" Width="28" X="-4" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock72" Width="28" X="-3" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock73" Width="28" X="-2" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock74" Width="28" X="-1" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock75" Width="28" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock76" Width="28" X="1" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock77" Width="28" X="2" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock78" Width="28" X="3" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock79" Width="28" X="4" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock80" Width="28" X="5" Y="-5" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock81" Width="28" X="-4" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock82" Width="28" X="-3" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock83" Width="28" X="-2" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock84" Width="28" X="-1" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock85" Width="28" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock86" Width="28" X="1" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock87" Width="28" X="2" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock88" Width="28" X="3" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock89" Width="28" X="4" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock90" Width="28" X="5" Y="-6" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock91" Width="28" X="-4" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock92" Width="28" X="-3" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock93" Width="28" X="-2" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock94" Width="28" X="-1" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock95" Width="28" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock96" Width="28" X="1" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock97" Width="28" X="2" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock98" Width="28" X="3" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock99" Width="28" X="4" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock100" Width="28" X="5" Y="-7" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock101" Width="28" X="-4" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock102" Width="28" X="-3" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock103" Width="28" X="-2" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock104" Width="28" X="-1" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock105" Width="28" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock106" Width="28" X="1" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock107" Width="28" X="2" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock108" Width="28" X="3" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock109" Width="28" X="4" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock110" Width="28" X="5" Y="-8" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock111" Width="28" X="-4" Y="-9" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock112" Width="28" X="-3" Y="-9" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock113" Width="28" X="-2" Y="-9" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock114" Width="28" X="-1" Y="-9" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock115" Width="28" Y="-9" IsFree="True" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock116" Width="28" X="1" Y="-9" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock117" Width="28" X="2" Y="-9" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock118" Width="28" X="3" Y="-9" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock119" Width="28" X="4" Y="-9" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock120" Width="28" X="5" Y="-9" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock121" Width="28" X="-4" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock122" Width="28" X="-3" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock123" Width="28" X="-2" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock124" Width="28" X="-1" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock125" Width="28" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock126" Width="28" X="1" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock127" Width="28" X="2" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock128" Width="28" X="3" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock129" Width="28" X="4" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock130" Width="28" X="5" Y="-10" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock131" Width="28" X="-4" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock132" Width="28" X="-3" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock133" Width="28" X="-2" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock134" Width="28" X="-1" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock135" Width="28" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock136" Width="28" X="1" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock137" Width="28" X="2" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock138" Width="28" X="3" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock139" Width="28" X="4" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock140" Width="28" X="5" Y="-11" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock141" Width="28" X="-4" Y="-12" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock142" Width="28" Y="-12" X="-3" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock143" Width="28" X="-2" Y="-12" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock144" Width="28" X="-1" Y="-12" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock145" Width="28" Y="-12" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock146" Width="28" X="1" Y="-12" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock147" Width="28" X="2" Y="-12" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock148" Width="28" X="3" Y="-12" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock149" Width="28" X="4" Y="-12" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock150" Width="28" X="5" Y="-12" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock151" Width="28" X="-4" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock152" Width="28" X="-3" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock153" Width="28" X="-2" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock154" Width="28" X="-1" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock155" Width="28" X="0" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock156" Width="28" X="1" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock157" Width="28" X="2" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock158" Width="28" X="3" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock159" Width="28" X="4" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock160" Width="28" X="5" Y="-13" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock161" Width="28" X="-4" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock162" Width="28" X="-3" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock163" Width="28" X="-2" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock164" Width="28" X="-1" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock165" Width="28" X="0" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock166" Width="28" X="1" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock167" Width="28" X="2" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock168" Width="28" X="3" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock169" Width="28" X="4" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock170" Width="28" X="5" Y="-14" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock171" Width="28" X="-4" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock172" Width="28" X="-3" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock173" Width="28" X="-2" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock174" Width="28" X="-1" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock175" Width="28" X="0" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock176" Width="28" X="1" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock177" Width="28" X="2" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock178" Width="28" X="3" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock179" Width="28" X="4" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock180" Width="28" X="5" Y="-15" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock181" Width="28" X="-4" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock182" Width="28" X="-3" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock183" Width="28" X="-2" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock184" Width="28" X="-1" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock185" Width="28" X="0" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock186" Width="28" X="1" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock187" Width="28" X="2" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock188" Width="28" X="3" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock189" Width="28" X="4" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock190" Width="28" X="5" Y="-16" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock191" Width="28" X="-4" Y="-17" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock192" Width="28" X="-3" Y="-17" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock193" Width="28" X="-2" Y="-17" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock194" Width="28" X="-1" Y="-17" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock195" Width="28" X="0" Y="-17" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock196" Width="28" X="1" Y="-17" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock197" Width="28" X="2" Y="-17" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock198" Width="28" X="3" Y="-17" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock199" Width="28" X="4" Y="-17" />
+            <my:GridBlock Content="Label" Height="28" x:Name="gridBlock200" Width="28" X="5" Y="-17" />
+        </WrapPanel>
+        <WrapPanel Height="564" HorizontalAlignment="Left" Margin="0,12,0,0" Name="FlashContainer" VerticalAlignment="Top" Width="310">
+            <WrapPanel.Background>
+                <ImageBrush ImageSource="/Leetris;component/Images/TetrisLogo.png" Stretch="Fill" TileMode="None" />
+            </WrapPanel.Background>
+            
+        </WrapPanel>
+
+        <Label Name="Smile" Margin="76,180,272,273" FontSize="36">
+            <Label.Background>
+                <ImageBrush ImageSource="/Leetris;component/Images/Four.png" />
+            </Label.Background>
+        </Label>
+        <Button Height="56" HorizontalAlignment="Left" Margin="397,321,0,0" Name="button2" VerticalAlignment="Top" Width="75" Click="button2_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/Leetris;component/Images/Picture6.png" />
+            </Button.Background>
+        </Button>
+        <Button Height="56" HorizontalAlignment="Left" Margin="350,382,0,0" Name="button3" VerticalAlignment="Top" Width="75" Click="button3_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/Leetris;component/Images/Picture8.png" />
+            </Button.Background>
+        </Button>
+        <Button Height="55" HorizontalAlignment="Left" Margin="316,321,0,0" Name="button4" VerticalAlignment="Top" Width="75" Click="button4_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/Leetris;component/Images/Picture9.png" />
+            </Button.Background>
+        </Button>
+        <Button Height="58" HorizontalAlignment="Left" Margin="350,257,0,0" Name="button5" VerticalAlignment="Top" Width="75" Click="button5_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/Leetris;component/Images/Picture10.png" />
+            </Button.Background>
+        </Button>
+    </Grid>
+</Window>
