@@ -28,6 +28,80 @@ public class myMainMenu extends Activity {
         }
         */
 
+        applyResponsiveBoardSizing();
+    }
+
+    // The board is faked 3D: 7 flat grids (level0 front .. level6 back) stacked with a
+    // diagonal offset per level. The XML ships fixed dp sizes as a fallback; this recomputes
+    // cell size, isometric step, and button size from the device's actual measured screen
+    // area so the board fills the screen on any device instead of a size tuned for one phone.
+    private void applyResponsiveBoardSizing() {
+        final View playground = findViewById(R.id.Playground);
+        playground.post(new Runnable() {
+            @Override
+            public void run() {
+                float density = getResources().getDisplayMetrics().density;
+                float availableWidthDp = playground.getWidth() / density;
+                float availableHeightDp = playground.getHeight() / density;
+
+                float reservedForControlsDp = 103f;
+                float availableBoardHeightDp = availableHeightDp - reservedForControlsDp;
+
+                // Scaled independently per axis (see leftMargin/topMargin formulas below):
+                // level0's left edge sits at 3*step (not 0), and level6 (rightmost) ends at
+                // 9*step + 7*cellWidth = 300*scale -- that's the true width constraint, not the
+                // 270*scale span between the two. Vertically, the button bar anchors below
+                // level0Table, whose own bottom is 14*cellHeight - step = 340*scale from
+                // Playground's top -- not the full 410*scale bounding box, most of which sits
+                // above Playground's top edge via level6..level1's larger negative margins.
+                float scaleX = Math.max(0.8f, Math.min(availableWidthDp / 300f, 2.5f));
+                float scaleY = Math.max(0.8f, Math.min(availableBoardHeightDp / 340f, 3.2f));
+
+                int cellWidthPx = Math.round(30f * scaleX * density);
+                int cellHeightPx = Math.round(25f * scaleY * density);
+                int stepXPx = Math.round(10f * scaleX * density);
+                int stepYPx = Math.round(10f * scaleY * density);
+
+                for (int level = 0; level <= 6; level++) {
+                    for (int row = 0; row <= 13; row++) {
+                        for (int col = 0; col <= 6; col++) {
+                            int id = getResources().getIdentifier(
+                                    "row" + row + "col" + col + "level" + level, "id", getPackageName());
+                            View cell = findViewById(id);
+                            if (cell != null) {
+                                ViewGroup.LayoutParams lp = cell.getLayoutParams();
+                                lp.width = cellWidthPx;
+                                lp.height = cellHeightPx;
+                                cell.setLayoutParams(lp);
+                            }
+                        }
+                    }
+
+                    int tableId = getResources().getIdentifier("level" + level + "Table", "id", getPackageName());
+                    View table = findViewById(tableId);
+                    if (table != null) {
+                        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) table.getLayoutParams();
+                        lp.topMargin = -(level + 1) * stepYPx;
+                        lp.leftMargin = (level + 3) * stepXPx;
+                        table.setLayoutParams(lp);
+                    }
+                }
+
+                int[] buttonIds = new int[]{R.id.btnLeft, R.id.btnFront, R.id.btnFlipSide, R.id.btnFlip, R.id.btnBack, R.id.btnRight};
+                int buttonSizePx = Math.round(55f * density);
+                int maxButtonSizePx = playground.getWidth() / buttonIds.length;
+                buttonSizePx = Math.min(buttonSizePx, Math.round(maxButtonSizePx * 0.92f));
+                for (int id : buttonIds) {
+                    View button = findViewById(id);
+                    if (button != null) {
+                        ViewGroup.LayoutParams lp = button.getLayoutParams();
+                        lp.width = buttonSizePx;
+                        lp.height = buttonSizePx;
+                        button.setLayoutParams(lp);
+                    }
+                }
+            }
+        });
     }
 
     @Override
