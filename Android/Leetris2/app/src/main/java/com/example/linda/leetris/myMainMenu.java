@@ -13,6 +13,100 @@ import android.app.AlertDialog;
 
 public class myMainMenu extends Activity {
 
+    private static final String PREFS_NAME = "leetris_prefs";
+    private static final String PREF_SOUND_ENABLED = "sound_enabled";
+    private static final String PREF_DARK_THEME = "dark_theme";
+
+    // Whether there's a game paused in the background (via the back button) that Resume can
+    // return to. Session-only - doesn't survive the process being killed. Full pause/resume
+    // that survives process death is tracked separately (issue #17).
+    boolean gamePaused = false;
+
+    private SharedPreferences getPrefs() {
+        return getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+    }
+
+    private boolean isSoundEnabled() {
+        return getPrefs().getBoolean(PREF_SOUND_ENABLED, true);
+    }
+
+    private boolean isDarkTheme() {
+        return getPrefs().getBoolean(PREF_DARK_THEME, false);
+    }
+
+    private void setSoundEnabled(boolean enabled) {
+        getPrefs().edit().putBoolean(PREF_SOUND_ENABLED, enabled).apply();
+    }
+
+    private void setDarkTheme(boolean dark) {
+        getPrefs().edit().putBoolean(PREF_DARK_THEME, dark).apply();
+        applyTheme();
+    }
+
+    // Minimal "for now" theming: swaps the root background color and the text color of labels
+    // that sit directly on it (no button/box background of their own to keep them readable).
+    // The board/piece art itself isn't redesigned for dark mode here - that's the larger scope
+    // tracked in issue #5.
+    private void applyTheme() {
+        boolean dark = isDarkTheme();
+        int backgroundColor = dark ? 0xFF121212 : 0xFFEEEEEE;
+        int textColor = dark ? 0xFFFFFFFF : 0xFF000000;
+
+        View root = findViewById(R.id.hostingLayout);
+        if (root != null) {
+            root.setBackgroundColor(backgroundColor);
+        }
+
+        int[] labelIds = new int[]{R.id.settingsTitle, R.id.labelSound, R.id.labelTheme,
+                R.id.btnResume, R.id.btnSettings, R.id.btnExit, R.id.btnSettingsBack};
+        for (int id : labelIds) {
+            View label = findViewById(id);
+            if (label instanceof TextView) {
+                ((TextView) label).setTextColor(textColor);
+            }
+        }
+    }
+
+    private void updateResumeButtonVisibility() {
+        View resumeButton = findViewById(R.id.btnResume);
+        if (resumeButton != null) {
+            resumeButton.setVisibility(gamePaused ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    // Leaves an in-progress game running in the background (state, score, and the falling
+    // piece are all preserved) and returns to the menu, instead of ending the game outright.
+    public void pauseGame() {
+        started = false;
+        gamePaused = true;
+
+        if (customHandler != null) {
+            customHandler.removeCallbacksAndMessages(null);
+        }
+        if (timerKeeper != null) {
+            timerKeeper.removeCallbacksAndMessages(null);
+        }
+
+        RelativeLayout layout1 = (RelativeLayout) findViewById(R.id.myScreenMenu);
+        layout1.setVisibility(View.VISIBLE);
+
+        RelativeLayout layout2 = (RelativeLayout) findViewById(R.id.Playground);
+        layout2.setVisibility(View.GONE);
+
+        updateResumeButtonVisibility();
+    }
+
+    // Returns to a game paused via pauseGame() - reuses DoStuff() to restore visibility and
+    // restart the timers, without touching the board/score/piece state the way startGame()'s
+    // Clear() would.
+    public void resumeGame() {
+        gamePaused = false;
+        DoStuff();
+        showPieces();
+        started = true;
+        updateResumeButtonVisibility();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +122,8 @@ public class myMainMenu extends Activity {
         }
         */
 
+        applyTheme();
+        updateResumeButtonVisibility();
         applyResponsiveBoardSizing();
     }
 
@@ -124,8 +220,7 @@ public class myMainMenu extends Activity {
     public void onBackPressed() {
         //super.onBackPressed();
         if(started){
-            //THIS BLOCK WILL NOT DO ANYTHING AND WOULD DISABLE BACK BUTTON
-            endGame(false);
+            pauseGame();
         }
         else{
             super.onBackPressed();
@@ -169,6 +264,67 @@ public class myMainMenu extends Activity {
             @Override
             public void onClick(View view) {
                 startGame();
+            }
+        });
+
+        Button btnResume = (Button) findViewById(R.id.btnResume);
+        btnResume.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                resumeGame();
+            }
+        });
+
+        Button btnSettings = (Button) findViewById(R.id.btnSettings);
+        btnSettings.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                Switch soundSwitch = (Switch) findViewById(R.id.switchSound);
+                soundSwitch.setChecked(isSoundEnabled());
+                Switch themeSwitch = (Switch) findViewById(R.id.switchTheme);
+                themeSwitch.setChecked(isDarkTheme());
+
+                findViewById(R.id.myScreenMenu).setVisibility(View.GONE);
+                findViewById(R.id.settingsScreen).setVisibility(View.VISIBLE);
+            }
+        });
+
+        Button btnExit = (Button) findViewById(R.id.btnExit);
+        btnExit.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
+        Button btnSettingsBack = (Button) findViewById(R.id.btnSettingsBack);
+        btnSettingsBack.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                findViewById(R.id.settingsScreen).setVisibility(View.GONE);
+                findViewById(R.id.myScreenMenu).setVisibility(View.VISIBLE);
+            }
+        });
+
+        Switch switchSound = (Switch) findViewById(R.id.switchSound);
+        switchSound.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                setSoundEnabled(isChecked);
+            }
+        });
+
+        Switch switchTheme = (Switch) findViewById(R.id.switchTheme);
+        switchTheme.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                setDarkTheme(isChecked);
             }
         });
 
@@ -3483,6 +3639,8 @@ public class myMainMenu extends Activity {
     public void endGame(boolean showIt)
     {
         started = false;
+        gamePaused = false;
+        updateResumeButtonVisibility();
 
         if (customHandler != null) {
             customHandler.removeCallbacksAndMessages(null);
@@ -4465,6 +4623,8 @@ public class myMainMenu extends Activity {
     public void startGame()
     {
 
+        gamePaused = false;
+        updateResumeButtonVisibility();
         Clear();
         DoStuff();
 

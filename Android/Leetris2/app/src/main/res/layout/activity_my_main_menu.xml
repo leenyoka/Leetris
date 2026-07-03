@@ -13,6 +13,8 @@
      <RelativeLayout
          android:layout_height="fill_parent"
          android:layout_width="fill_parent"
+         android:paddingLeft="24dp"
+         android:paddingRight="24dp"
          android:id="@+id/myScreenMenu">
 
          <ImageButton
@@ -24,7 +26,94 @@
              android:id="@+id/bntStart"
              android:layout_height="140dp" />
 
+         <Button
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_below="@id/bntStart"
+             android:layout_marginTop="24dp"
+             android:text="Resume"
+             android:visibility="gone"
+             android:id="@+id/btnResume" />
+
+         <Button
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_below="@id/btnResume"
+             android:layout_marginTop="16dp"
+             android:text="Settings"
+             android:id="@+id/btnSettings" />
+
+         <Button
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_below="@id/btnSettings"
+             android:layout_marginTop="16dp"
+             android:text="Exit"
+             android:id="@+id/btnExit" />
+
      </RelativeLayout>
+    <RelativeLayout
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:visibility="gone"
+        android:id="@+id/settingsScreen">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="120dp"
+            android:textSize="28sp"
+            android:text="Settings"
+            android:id="@+id/settingsTitle" />
+
+        <TableLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/settingsTitle"
+            android:layout_marginTop="40dp"
+            android:stretchColumns="0">
+
+            <TableRow
+                android:layout_marginBottom="20dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="Sound"
+                    android:id="@+id/labelSound" />
+                <Switch
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/switchSound" />
+            </TableRow>
+
+            <TableRow>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="Dark theme"
+                    android:id="@+id/labelTheme" />
+                <Switch
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/switchTheme" />
+            </TableRow>
+
+        </TableLayout>
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="40dp"
+            android:text="Back"
+            android:id="@+id/btnSettingsBack" />
+
+    </RelativeLayout>
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
