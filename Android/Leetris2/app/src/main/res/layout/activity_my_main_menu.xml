@@ -51,6 +51,16 @@
              android:text="Exit"
              android:id="@+id/btnExit" />
 
+         <TextView
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_below="@id/btnExit"
+             android:layout_marginTop="32dp"
+             android:gravity="center_horizontal"
+             android:textSize="18sp"
+             android:text="High Score: 0"
+             android:id="@+id/labelHighScore" />
+
      </RelativeLayout>
     <RelativeLayout
         android:layout_height="fill_parent"

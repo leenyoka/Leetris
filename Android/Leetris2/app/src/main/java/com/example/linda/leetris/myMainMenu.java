@@ -11,6 +11,7 @@ import android.content.*;
 import android.app.AlertDialog;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.graphics.drawable.ColorDrawable;
 
 
 public class myMainMenu extends Activity {
@@ -18,6 +19,7 @@ public class myMainMenu extends Activity {
     private static final String PREFS_NAME = "leetris_prefs";
     private static final String PREF_SOUND_ENABLED = "sound_enabled";
     private static final String PREF_DARK_THEME = "dark_theme";
+    private static final String PREF_HIGH_SCORE = "high_score";
 
     // Whether there's a game paused in the background (via the back button) that Resume can
     // return to. Session-only - doesn't survive the process being killed. Full pause/resume
@@ -45,6 +47,21 @@ public class myMainMenu extends Activity {
         applyTheme();
     }
 
+    private int getHighScore() {
+        return getPrefs().getInt(PREF_HIGH_SCORE, 0);
+    }
+
+    private void setHighScore(int score) {
+        getPrefs().edit().putInt(PREF_HIGH_SCORE, score).apply();
+    }
+
+    private void updateHighScoreDisplay() {
+        TextView label = (TextView) findViewById(R.id.labelHighScore);
+        if (label != null) {
+            label.setText("High Score: " + getHighScore());
+        }
+    }
+
     // Minimal "for now" theming: swaps the root background color and the text color of labels
     // that sit directly on it (no button/box background of their own to keep them readable).
     // The board/piece art itself isn't redesigned for dark mode here - that's the larger scope
@@ -60,7 +77,8 @@ public class myMainMenu extends Activity {
         }
 
         int[] labelIds = new int[]{R.id.settingsTitle, R.id.labelSound, R.id.labelTheme,
-                R.id.btnResume, R.id.btnSettings, R.id.btnExit, R.id.btnSettingsBack};
+                R.id.btnResume, R.id.btnSettings, R.id.btnExit, R.id.btnSettingsBack,
+                R.id.labelHighScore};
         for (int id : labelIds) {
             View label = findViewById(id);
             if (label instanceof TextView) {
@@ -123,6 +141,7 @@ public class myMainMenu extends Activity {
 
         applyTheme();
         updateResumeButtonVisibility();
+        updateHighScoreDisplay();
         applyResponsiveBoardSizing();
         setupRotateGesture();
     }
@@ -3694,12 +3713,35 @@ public class myMainMenu extends Activity {
     }
     private void ShowMessage(String msg, String caption)
     {
+        boolean dark = isDarkTheme();
+        int backgroundColor = dark ? 0xFF121212 : 0xFFEEEEEE;
+        int textColor = dark ? 0xFFFFFFFF : 0xFF000000;
+
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
         alertDialog.setTitle(caption);
         alertDialog.setMessage(msg);
-        // alertDialog.setButton("OK",);
-        //alertDialog.setIcon(R.drawable.icon);
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Close", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
         alertDialog.show();
+
+        // Matches applyTheme()'s colors instead of relying on the system day/night theme, since
+        // this app's dark/light toggle is its own preference, independent of the device's.
+        Window window = alertDialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new ColorDrawable(backgroundColor));
+        }
+        TextView messageView = alertDialog.findViewById(android.R.id.message);
+        if (messageView != null) {
+            messageView.setTextColor(textColor);
+        }
+        Button closeButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        if (closeButton != null) {
+            closeButton.setTextColor(textColor);
+        }
     }
     public void endGame(boolean showIt)
     {
@@ -3711,9 +3753,19 @@ public class myMainMenu extends Activity {
             customHandler.removeCallbacksAndMessages(null);
         }
 
+        boolean isNewHighScore = _score > getHighScore();
+        if (isNewHighScore) {
+            setHighScore(_score);
+            updateHighScoreDisplay();
+        }
+
         if (showIt)
         {
-            ShowMessage("Your score is :" + _score, "Game Over"); //backin
+            if (isNewHighScore) {
+                ShowMessage("New high score! You scored " + _score + ".", "Congratulations!");
+            } else {
+                ShowMessage("Your score is :" + _score, "Game Over"); //backin
+            }
             //ScreenGame.Visibility = System.Windows.Visibility.Collapsed;
             //ScreenMenu.Visibility = System.Windows.Visibility.Visible;
         }
