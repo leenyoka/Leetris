@@ -40,6 +40,16 @@
              android:layout_height="wrap_content"
              android:layout_below="@id/btnResume"
              android:layout_marginTop="16dp"
+             android:clickable="false"
+             android:focusable="false"
+             android:text="High Score: 0"
+             android:id="@+id/labelHighScore" />
+
+         <Button
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_below="@id/labelHighScore"
+             android:layout_marginTop="16dp"
              android:text="Settings"
              android:id="@+id/btnSettings" />
 
