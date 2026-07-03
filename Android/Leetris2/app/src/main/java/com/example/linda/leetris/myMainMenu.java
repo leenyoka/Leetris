@@ -3463,15 +3463,17 @@ public class myMainMenu extends Activity {
         tetrisGrid.set(thisLevel, values);
 
     }
-    public boolean inRange(int row, int col)
+    public boolean inRange(int row, int col, int level)
     {
-        // tetrisGrid is `new String[18][7]` per level (see InitializeScreenGrid()) - valid rows
-        // are 0-17, valid columns 0-6. This previously allowed row up to 25 and col up to 9
-        // (stale bounds from some earlier board size, never updated), and didn't check row < 0
-        // at all - so a flip/rotation landing outside the real board could pass this check and
-        // then crash later with an ArrayIndexOutOfBoundsException actually writing into
-        // tetrisGrid (see ActivateNewCont -> TetrisGrid).
-        if (row < 0 || row > 17 || col < 0 || col > 6)
+        // tetrisGrid is `new String[18][7]` per level (see InitializeScreenGrid()), and there are
+        // 7 levels (0-6, see InitializeScreenGrid()'s loop). Valid rows are 0-17, valid columns
+        // 0-6, valid levels 0-6. This previously allowed row up to 25 and col up to 9 (stale
+        // bounds from some earlier board size, never updated), didn't check row < 0 at all, and
+        // never checked level - so a sideways flip landing one level past the front/back edge
+        // (e.g. after moving the piece all the way back to level 6) could pass this check and
+        // then crash with an ArrayIndexOutOfBoundsException in tetrisGrid.get(level) (see
+        // ActivateNewCont -> TetrisGrid).
+        if (row < 0 || row > 17 || col < 0 || col > 6 || level < 0 || level > 6)
             return false;
         else
             return true;
@@ -3481,7 +3483,8 @@ public class myMainMenu extends Activity {
         for (String value : options)
         {
             if (!inRange(Integer.parseInt(mySplit(value,",")[0]),
-                    Integer.parseInt(mySplit(value,",")[1])))
+                    Integer.parseInt(mySplit(value,",")[1]),
+                    Integer.parseInt(mySplit(value,",")[2])))
                 return false;
         }
         return true;
@@ -3547,6 +3550,7 @@ public class myMainMenu extends Activity {
             String[] pieces = mySplit(option,",");
             int row = Integer.parseInt(pieces[0].trim());
             int col = Integer.parseInt(pieces[1].trim());
+            int level = Integer.parseInt(pieces[2].trim());
 
             // A flip that would land outside the board (e.g. against the right edge) isn't
             // valid - treat it the same as landing on an occupied cell, same as
@@ -3554,7 +3558,13 @@ public class myMainMenu extends Activity {
             if (row < 0 || row > 17 || col < 0 || col > 6)
                 return false;
 
-            if (((tetrisGrid.get(0))[row][ col]) != null
+            // Was hardcoded to tetrisGrid.get(0), so a flip anywhere except level 0 checked
+            // collisions against a completely unrelated depth layer - it could wrongly block a
+            // flip because level 0 happened to be occupied there, or wrongly allow one that
+            // actually overlaps landed blocks at the piece's real level (most visible right at
+            // level 6, the far end, where level 0's occupancy is least likely to coincidentally
+            // match).
+            if (((tetrisGrid.get(level))[row][ col]) != null
                     && !isActive(row, col))
                 return false;
         }
