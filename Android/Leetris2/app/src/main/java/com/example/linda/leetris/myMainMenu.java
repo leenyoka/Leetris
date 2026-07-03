@@ -131,44 +131,41 @@ public class myMainMenu extends Activity {
     // listener sits on Playground itself, not on individual cells/buttons, so it only ever sees
     // touches that the board's non-clickable cell ImageViews don't consume - button presses are
     // unaffected since ImageButton/Button already claim their own touches first.
+    //
+    // Tracks ACTION_DOWN/ACTION_MOVE/ACTION_UP directly rather than using GestureDetector.onFling:
+    // onFling only fires above Android's internal minimum fling velocity, so a slower deliberate
+    // drag would be silently ignored. Comparing the down/up X position has no velocity
+    // requirement - any left/right drag past the distance threshold rotates the view.
     private void setupRotateGesture() {
-        final GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
-            private static final int SWIPE_DISTANCE_THRESHOLD_DP = 60;
-            private static final int SWIPE_VELOCITY_THRESHOLD_DP = 100;
-
-            @Override
-            public boolean onDown(MotionEvent e) {
-                // SimpleOnGestureListener's default onDown() returns false, which makes
-                // GestureDetector.onTouchEvent() return false for ACTION_DOWN - Playground would
-                // then never claim the touch stream, so it'd never see the MOVE/UP events needed
-                // to recognize a fling. Returning true here is what makes swiping work at all.
-                return true;
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                if (e1 == null) return false;
-                float density = getResources().getDisplayMetrics().density;
-                float diffX = e2.getX() - e1.getX();
-                float diffY = e2.getY() - e1.getY();
-                if (Math.abs(diffX) <= Math.abs(diffY)) return false;
-                if (Math.abs(diffX) <= SWIPE_DISTANCE_THRESHOLD_DP * density) return false;
-                if (Math.abs(velocityX) <= SWIPE_VELOCITY_THRESHOLD_DP * density) return false;
-
-                if (diffX < 0) {
-                    rotateViewRight();
-                } else {
-                    rotateViewLeft();
-                }
-                return true;
-            }
-        });
+        final float density = getResources().getDisplayMetrics().density;
+        final float swipeThresholdPx = 60f * density;
 
         View playground = findViewById(R.id.Playground);
         playground.setOnTouchListener(new View.OnTouchListener() {
+            private float startX;
+            private float startY;
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                return gestureDetector.onTouchEvent(event);
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startX = event.getX();
+                        startY = event.getY();
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        float diffX = event.getX() - startX;
+                        float diffY = event.getY() - startY;
+                        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThresholdPx) {
+                            if (diffX < 0) {
+                                rotateViewLeft();
+                            } else {
+                                rotateViewRight();
+                            }
+                        }
+                        return true;
+                    default:
+                        return true;
+                }
             }
         });
     }
