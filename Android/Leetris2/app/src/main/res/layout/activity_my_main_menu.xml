@@ -35,15 +35,13 @@
              android:visibility="gone"
              android:id="@+id/btnResume" />
 
-         <TextView
+         <Button
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
              android:layout_below="@id/btnResume"
              android:layout_marginTop="16dp"
-             android:paddingTop="12dp"
-             android:paddingBottom="12dp"
-             android:gravity="center_horizontal"
-             android:textSize="16sp"
+             android:clickable="false"
+             android:focusable="false"
              android:text="High Score: 0"
              android:id="@+id/labelHighScore" />
 
