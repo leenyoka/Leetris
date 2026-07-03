@@ -4027,5 +4027,33 @@
 
 
     </TableLayout>
+
+    <LinearLayout
+        android:id="@+id/rotateControlsBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/controlsBar"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:textSize="24sp"
+            android:contentDescription="Rotate view left"
+            android:text="↺"
+            android:id="@+id/btnRotateLeft" />
+
+        <Button
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginLeft="16dp"
+            android:textSize="24sp"
+            android:contentDescription="Rotate view right"
+            android:text="↻"
+            android:id="@+id/btnRotateRight" />
+
+    </LinearLayout>
+
     </RelativeLayout>
 </RelativeLayout>
