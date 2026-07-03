@@ -35,14 +35,30 @@ public class myMainMenu extends Activity {
     // diagonal offset per level. The XML ships fixed dp sizes as a fallback; this recomputes
     // cell size, isometric step, and button size from the device's actual measured screen
     // area so the board fills the screen on any device instead of a size tuned for one phone.
+    private int lastSizedWidth = -1;
+    private int lastSizedHeight = -1;
+
+    // Recomputes board/button sizing on every layout pass instead of a single post(), and skips
+    // work when the measured size hasn't changed. A single post() isn't reliable here: window
+    // inset application (nav bar padding via fitsSystemWindows) can settle after the first
+    // layout pass, so a one-shot read can lock in a taller-than-real playground height from
+    // before insets were applied, undersizing the board and leaving a gap above the buttons.
+    // Listening for every global layout instead lets a later, correctly-inset pass self-correct.
     private void applyResponsiveBoardSizing() {
         final View playground = findViewById(R.id.Playground);
-        playground.post(new Runnable() {
+        playground.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
-            public void run() {
+            public void onGlobalLayout() {
+                int widthPx = playground.getWidth();
+                int heightPx = playground.getHeight();
+                if (widthPx == 0 || heightPx == 0) return;
+                if (widthPx == lastSizedWidth && heightPx == lastSizedHeight) return;
+                lastSizedWidth = widthPx;
+                lastSizedHeight = heightPx;
+
                 float density = getResources().getDisplayMetrics().density;
-                float availableWidthDp = playground.getWidth() / density;
-                float availableHeightDp = playground.getHeight() / density;
+                float availableWidthDp = widthPx / density;
+                float availableHeightDp = heightPx / density;
 
                 float reservedForControlsDp = 103f;
                 float availableBoardHeightDp = availableHeightDp - reservedForControlsDp;
@@ -87,9 +103,9 @@ public class myMainMenu extends Activity {
                     }
                 }
 
-                int[] buttonIds = new int[]{R.id.btnLeft, R.id.btnFront, R.id.btnFlipSide, R.id.btnFlip, R.id.btnBack, R.id.btnRight};
+                int[] buttonIds = new int[]{R.id.btnLeft, R.id.btnFront, R.id.btnFlipSide, R.id.btnFlip, R.id.btnBack, R.id.btnRight, R.id.btnDrop};
                 int buttonSizePx = Math.round(55f * density);
-                int maxButtonSizePx = playground.getWidth() / buttonIds.length;
+                int maxButtonSizePx = widthPx / buttonIds.length;
                 buttonSizePx = Math.min(buttonSizePx, Math.round(maxButtonSizePx * 0.92f));
                 for (int id : buttonIds) {
                     View button = findViewById(id);
@@ -171,6 +187,15 @@ public class myMainMenu extends Activity {
             @Override
             public void onClick(View view) {
                 MoveRight();
+            }
+        });
+
+        ImageButton btnDrop = (ImageButton) findViewById(R.id.btnDrop);
+        btnDrop.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                drop();
             }
         });
 
