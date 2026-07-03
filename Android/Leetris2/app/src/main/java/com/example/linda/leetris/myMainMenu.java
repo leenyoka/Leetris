@@ -83,9 +83,6 @@ public class myMainMenu extends Activity {
         if (customHandler != null) {
             customHandler.removeCallbacksAndMessages(null);
         }
-        if (timerKeeper != null) {
-            timerKeeper.removeCallbacksAndMessages(null);
-        }
 
         RelativeLayout layout1 = (RelativeLayout) findViewById(R.id.myScreenMenu);
         layout1.setVisibility(View.VISIBLE);
@@ -228,7 +225,6 @@ public class myMainMenu extends Activity {
         }
     }
     android.os.Handler customHandler;
-    android.os.Handler timerKeeper;
     private Runnable updateTimerThread = new Runnable()
     {
         public void run()
@@ -241,16 +237,6 @@ public class myMainMenu extends Activity {
                 mover();
             }
             customHandler.postDelayed(this, speed);
-        }
-    };
-    private Runnable updateTimerThreadKeeper = new Runnable()
-    {
-        public void run()
-        {
-
-            level++;
-            AdjustSpeed();
-            timerKeeper.postDelayed(this, 180000);
         }
     };
     int speed = 900;
@@ -423,13 +409,8 @@ public class myMainMenu extends Activity {
         if (customHandler != null) {
             customHandler.removeCallbacksAndMessages(null);
         }
-        if (timerKeeper != null) {
-            timerKeeper.removeCallbacksAndMessages(null);
-        }
         customHandler = new android.os.Handler();
         customHandler.postDelayed(updateTimerThread, 0);
-        timerKeeper = new android.os.Handler();
-        timerKeeper.postDelayed(updateTimerThreadKeeper, 180000);
         //ChangeImage(0, 2, 0, "j");
         //ChangeImage(0, 3, 0, "j");
     }
@@ -3347,6 +3328,12 @@ public class myMainMenu extends Activity {
     //String [] shadowPieces = new String[4];
     int _score = 0;
     int level = 1;
+    // Difficulty now ramps with lines cleared instead of a fixed wall-clock timer (see
+    // checkLevelUp() below) - a slow, careful player and a fast player each see difficulty
+    // scale with their own progress instead of an arbitrary clock that can ambush a slow
+    // player or feel too slow for a fast one. 10 lines per level matches classic Tetris.
+    int totalLinesCleared = 0;
+    static final int LINES_PER_LEVEL = 10;
     boolean busy = false;
     boolean launching = false;
 
@@ -3412,7 +3399,13 @@ public class myMainMenu extends Activity {
     }
     public boolean inRange(int row, int col)
     {
-        if (row > 25 || col < 0 || col > 9)
+        // tetrisGrid is `new String[18][7]` per level (see InitializeScreenGrid()) - valid rows
+        // are 0-17, valid columns 0-6. This previously allowed row up to 25 and col up to 9
+        // (stale bounds from some earlier board size, never updated), and didn't check row < 0
+        // at all - so a flip/rotation landing outside the real board could pass this check and
+        // then crash later with an ArrayIndexOutOfBoundsException actually writing into
+        // tetrisGrid (see ActivateNewCont -> TetrisGrid).
+        if (row < 0 || row > 17 || col < 0 || col > 6)
             return false;
         else
             return true;
@@ -3488,6 +3481,12 @@ public class myMainMenu extends Activity {
             String[] pieces = mySplit(option,",");
             int row = Integer.parseInt(pieces[0].trim());
             int col = Integer.parseInt(pieces[1].trim());
+
+            // A flip that would land outside the board (e.g. against the right edge) isn't
+            // valid - treat it the same as landing on an occupied cell, same as
+            // canFlipSideways()'s equivalent guard just above.
+            if (row < 0 || row > 17 || col < 0 || col > 6)
+                return false;
 
             if (((tetrisGrid.get(0))[row][ col]) != null
                     && !isActive(row, col))
@@ -3644,9 +3643,6 @@ public class myMainMenu extends Activity {
 
         if (customHandler != null) {
             customHandler.removeCallbacksAndMessages(null);
-        }
-        if (timerKeeper != null) {
-            timerKeeper.removeCallbacksAndMessages(null);
         }
 
         if (showIt)
@@ -4262,6 +4258,7 @@ public class myMainMenu extends Activity {
                     }
                 }
                 score(linesForFullRows);
+                checkLevelUp(linesForFullRows);
             }
         }
 
@@ -4310,6 +4307,7 @@ public class myMainMenu extends Activity {
                     }
                 }
                 score(linesThereAreFullRowsTwo);
+                checkLevelUp(linesThereAreFullRowsTwo);
             }
         }
 
@@ -4383,6 +4381,20 @@ public class myMainMenu extends Activity {
 
         _score += gainedPoints;
         //showScore.Text = _score.ToString();
+    }
+    // Replaces the old fixed-3-minutes difficulty timer: level now rises with total lines
+    // cleared instead. Called right after score() wherever lines are eaten.
+    public void checkLevelUp(int linesJustCleared)
+    {
+        if (linesJustCleared <= 0) return;
+
+        totalLinesCleared += linesJustCleared;
+        int targetLevel = 1 + (totalLinesCleared / LINES_PER_LEVEL);
+        if (targetLevel > level)
+        {
+            level = targetLevel;
+            AdjustSpeed();
+        }
     }
     public void EatFullRows()
     {
@@ -4528,7 +4540,7 @@ public class myMainMenu extends Activity {
                     if(!isIn(row +4, col,level, activeGridBlocks))
                     {
                         //view.ChangeCell(row, col, level, getMyImage("pieces/Shadow"));
-                        ChangeImage(row,col,level,"shadow");
+                        setCellSymbol(level, row, col, "shadow");
                     }
                 }
             }
@@ -4588,6 +4600,7 @@ public class myMainMenu extends Activity {
         activeGridBlocks = new String[4];
         speed = 700;
         level = 1;
+        totalLinesCleared = 0;
         //CleanPreview();
         //showPieces();
     }
@@ -4635,6 +4648,50 @@ public class myMainMenu extends Activity {
         launch();
 
     }
+    // [level][row 0-13][col] cache of the 686 cell ImageViews, populated lazily via
+    // getIdentifier() the first time each cell is touched, so showPieces() (called on every
+    // movement tick, down to a few ms apart at high levels) never needs a resource lookup for
+    // cells it has already drawn once.
+    private ImageView[][][] cellViewCache;
+
+    private ImageView getCellView(int level, int row, int col) {
+        // Rows above the visible board (the spawn buffer, tetrisGrid rows 0-3 before the -4
+        // offset) have no view - e.g. a shadow projection for a piece that can't drop even one
+        // row because the board is nearly full lands here. The old ChangeImage() dispatch
+        // silently no-op'd on these (its if/else chain over row 0-13 just never matched), so
+        // match that behavior here instead of throwing on the direct array index.
+        if (level < 0 || level > 6 || row < 0 || row > 13 || col < 0 || col > 6) {
+            return null;
+        }
+        if (cellViewCache == null) {
+            cellViewCache = new ImageView[7][14][7];
+        }
+        if (cellViewCache[level][row][col] == null) {
+            int id = getResources().getIdentifier("row" + row + "col" + col + "level" + level, "id", getPackageName());
+            cellViewCache[level][row][col] = (ImageView) findViewById(id);
+        }
+        return cellViewCache[level][row][col];
+    }
+
+    // Only touches a cell's drawable if the symbol actually changed since the last draw
+    // (tracked via the view's tag), instead of unconditionally calling setImageResource() on
+    // all 686 cells every tick regardless of whether ~99% of them are unchanged. That
+    // unconditional full-board redraw was the main cause of "jerky" movement (issue #4) -
+    // at high levels `speed` drops to single-digit milliseconds, and redrawing 686 views that
+    // frequently is real, measurable per-tick cost that Handler.postDelayed's own timing has
+    // nothing to do with.
+    private void setCellSymbol(int level, int row, int col, String symbol) {
+        ImageView view = getCellView(level, row, col);
+        if (view == null) return;
+        if (symbol.equals(view.getTag())) return;
+
+        int drawableId = getResources().getIdentifier(symbol, "drawable", getPackageName());
+        if (drawableId != 0) {
+            view.setImageResource(drawableId);
+            view.setTag(symbol);
+        }
+    }
+
     public void showPieces()
     {
         for (int myLevel = 0; myLevel < 7; myLevel++)
@@ -4648,17 +4705,17 @@ public class myMainMenu extends Activity {
                     {
 
                             String value = (((tetrisGrid.get(myLevel))[row ][col].split("_"))[0]).toLowerCase();
-                            ChangeImage(row - 4, col, myLevel, value.trim().toLowerCase());
+                            setCellSymbol(myLevel, row - 4, col, value.trim().toLowerCase());
                     }
                     else
                     {
                         if (row != 17)
                         {
-                            ChangeImage(row -4, col, myLevel, "c");
+                            setCellSymbol(myLevel, row - 4, col, "c");
                         }
                         else
                         {
-                            ChangeImage(row -4, col, myLevel, "empty");
+                            setCellSymbol(myLevel, row - 4, col, "empty");
                         }
                     }
 
