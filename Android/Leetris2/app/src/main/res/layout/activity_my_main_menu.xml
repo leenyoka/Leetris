@@ -40,8 +40,6 @@
              android:layout_height="wrap_content"
              android:layout_below="@id/btnResume"
              android:layout_marginTop="16dp"
-             android:clickable="false"
-             android:focusable="false"
              android:text="High Score: 0"
              android:id="@+id/labelHighScore" />
 
@@ -122,6 +120,71 @@
             android:layout_marginBottom="40dp"
             android:text="Back"
             android:id="@+id/btnSettingsBack" />
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:visibility="gone"
+        android:id="@+id/highScoresScreen">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="120dp"
+            android:textSize="28sp"
+            android:text="Top High Scores"
+            android:id="@+id/highScoresTitle" />
+
+        <TableLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/highScoresTitle"
+            android:layout_marginTop="40dp"
+            android:stretchColumns="1">
+
+            <TableRow android:layout_marginBottom="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="#" android:id="@+id/scoreRank1" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="-" android:id="@+id/scoreValue1" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="" android:id="@+id/scoreDate1" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="#" android:id="@+id/scoreRank2" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="-" android:id="@+id/scoreValue2" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="" android:id="@+id/scoreDate2" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="#" android:id="@+id/scoreRank3" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="-" android:id="@+id/scoreValue3" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="" android:id="@+id/scoreDate3" />
+            </TableRow>
+
+            <TableRow android:layout_marginBottom="16dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="#" android:id="@+id/scoreRank4" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="-" android:id="@+id/scoreValue4" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="" android:id="@+id/scoreDate4" />
+            </TableRow>
+
+            <TableRow>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="#" android:id="@+id/scoreRank5" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="-" android:id="@+id/scoreValue5" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="16sp" android:text="" android:id="@+id/scoreDate5" />
+            </TableRow>
+
+        </TableLayout>
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="40dp"
+            android:text="Back"
+            android:id="@+id/btnHighScoresBack" />
 
     </RelativeLayout>
     <RelativeLayout

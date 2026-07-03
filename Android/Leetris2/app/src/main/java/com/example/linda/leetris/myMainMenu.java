@@ -11,7 +11,6 @@ import android.content.*;
 import android.app.AlertDialog;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.graphics.drawable.ColorDrawable;
 
 
 public class myMainMenu extends Activity {
@@ -19,7 +18,21 @@ public class myMainMenu extends Activity {
     private static final String PREFS_NAME = "leetris_prefs";
     private static final String PREF_SOUND_ENABLED = "sound_enabled";
     private static final String PREF_DARK_THEME = "dark_theme";
-    private static final String PREF_HIGH_SCORE = "high_score";
+    private static final String PREF_HIGH_SCORES = "high_scores";
+    private static final int MAX_HIGH_SCORES = 5;
+
+    // One row of the top-5 list: a score and when it was set. Stored serialized as
+    // "score,epochMillis" entries joined by ";" in a single SharedPreferences string, rather than
+    // reaching for JSON/Gson for just 5 short rows.
+    private static class HighScoreEntry {
+        final int score;
+        final long timestampMillis;
+
+        HighScoreEntry(int score, long timestampMillis) {
+            this.score = score;
+            this.timestampMillis = timestampMillis;
+        }
+    }
 
     // Whether there's a game paused in the background (via the back button) that Resume can
     // return to. Session-only - doesn't survive the process being killed. Full pause/resume
@@ -47,12 +60,62 @@ public class myMainMenu extends Activity {
         applyTheme();
     }
 
-    private int getHighScore() {
-        return getPrefs().getInt(PREF_HIGH_SCORE, 0);
+    private List<HighScoreEntry> getHighScores() {
+        List<HighScoreEntry> entries = new ArrayList<HighScoreEntry>();
+        String raw = getPrefs().getString(PREF_HIGH_SCORES, "");
+        if (raw.isEmpty()) return entries;
+
+        for (String entry : raw.split(";")) {
+            String[] fields = entry.split(",");
+            if (fields.length != 2) continue;
+            try {
+                entries.add(new HighScoreEntry(Integer.parseInt(fields[0]), Long.parseLong(fields[1])));
+            } catch (NumberFormatException ex) {
+                // Skip a corrupted row rather than losing the whole list.
+            }
+        }
+        return entries;
     }
 
-    private void setHighScore(int score) {
-        getPrefs().edit().putInt(PREF_HIGH_SCORE, score).apply();
+    private void saveHighScores(List<HighScoreEntry> entries) {
+        StringBuilder raw = new StringBuilder();
+        for (int i = 0; i < entries.size(); i++) {
+            if (i > 0) raw.append(";");
+            HighScoreEntry entry = entries.get(i);
+            raw.append(entry.score).append(",").append(entry.timestampMillis);
+        }
+        getPrefs().edit().putString(PREF_HIGH_SCORES, raw.toString()).apply();
+    }
+
+    private int getHighScore() {
+        List<HighScoreEntry> entries = getHighScores();
+        return entries.isEmpty() ? 0 : entries.get(0).score;
+    }
+
+    // Adds a new score to the top-5 list (sorted highest first) and persists it. Returns whether
+    // this score is the new best, which is what triggers the "Congratulations!" popup in
+    // endGame() - being added to the list at all (top 5) doesn't necessarily mean a new best.
+    private boolean recordScore(int score) {
+        int previousBest = getHighScore();
+
+        List<HighScoreEntry> entries = getHighScores();
+        entries.add(new HighScoreEntry(score, System.currentTimeMillis()));
+        Collections.sort(entries, new Comparator<HighScoreEntry>() {
+            @Override
+            public int compare(HighScoreEntry a, HighScoreEntry b) {
+                return b.score - a.score;
+            }
+        });
+        if (entries.size() > MAX_HIGH_SCORES) {
+            entries = entries.subList(0, MAX_HIGH_SCORES);
+        }
+        saveHighScores(entries);
+
+        return score > previousBest;
+    }
+
+    private String formatHighScoreDate(long millis) {
+        return android.text.format.DateFormat.getDateFormat(this).format(new Date(millis));
     }
 
     private void updateHighScoreDisplay() {
@@ -60,6 +123,33 @@ public class myMainMenu extends Activity {
         if (label != null) {
             label.setText("High Score: " + getHighScore());
         }
+    }
+
+    private static final int[] SCORE_RANK_IDS = {R.id.scoreRank1, R.id.scoreRank2, R.id.scoreRank3, R.id.scoreRank4, R.id.scoreRank5};
+    private static final int[] SCORE_VALUE_IDS = {R.id.scoreValue1, R.id.scoreValue2, R.id.scoreValue3, R.id.scoreValue4, R.id.scoreValue5};
+    private static final int[] SCORE_DATE_IDS = {R.id.scoreDate1, R.id.scoreDate2, R.id.scoreDate3, R.id.scoreDate4, R.id.scoreDate5};
+
+    private void showHighScoresScreen() {
+        List<HighScoreEntry> entries = getHighScores();
+
+        for (int i = 0; i < MAX_HIGH_SCORES; i++) {
+            TextView rankView = (TextView) findViewById(SCORE_RANK_IDS[i]);
+            TextView valueView = (TextView) findViewById(SCORE_VALUE_IDS[i]);
+            TextView dateView = (TextView) findViewById(SCORE_DATE_IDS[i]);
+
+            rankView.setText((i + 1) + ".");
+            if (i < entries.size()) {
+                HighScoreEntry entry = entries.get(i);
+                valueView.setText(String.valueOf(entry.score));
+                dateView.setText(formatHighScoreDate(entry.timestampMillis));
+            } else {
+                valueView.setText("-");
+                dateView.setText("");
+            }
+        }
+
+        findViewById(R.id.myScreenMenu).setVisibility(View.GONE);
+        findViewById(R.id.highScoresScreen).setVisibility(View.VISIBLE);
     }
 
     // Minimal "for now" theming: swaps the root background color and the text color of labels
@@ -78,12 +168,25 @@ public class myMainMenu extends Activity {
 
         int[] labelIds = new int[]{R.id.settingsTitle, R.id.labelSound, R.id.labelTheme,
                 R.id.btnResume, R.id.btnSettings, R.id.btnExit, R.id.btnSettingsBack,
-                R.id.labelHighScore};
+                R.id.labelHighScore, R.id.highScoresTitle, R.id.btnHighScoresBack};
         for (int id : labelIds) {
             View label = findViewById(id);
             if (label instanceof TextView) {
                 ((TextView) label).setTextColor(textColor);
             }
+        }
+
+        for (int id : SCORE_RANK_IDS) {
+            TextView label = (TextView) findViewById(id);
+            if (label != null) label.setTextColor(textColor);
+        }
+        for (int id : SCORE_VALUE_IDS) {
+            TextView label = (TextView) findViewById(id);
+            if (label != null) label.setTextColor(textColor);
+        }
+        for (int id : SCORE_DATE_IDS) {
+            TextView label = (TextView) findViewById(id);
+            if (label != null) label.setTextColor(textColor);
         }
     }
 
@@ -341,6 +444,25 @@ public class myMainMenu extends Activity {
 
                 findViewById(R.id.myScreenMenu).setVisibility(View.GONE);
                 findViewById(R.id.settingsScreen).setVisibility(View.VISIBLE);
+            }
+        });
+
+        Button labelHighScore = (Button) findViewById(R.id.labelHighScore);
+        labelHighScore.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                showHighScoresScreen();
+            }
+        });
+
+        Button btnHighScoresBack = (Button) findViewById(R.id.btnHighScoresBack);
+        btnHighScoresBack.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                findViewById(R.id.highScoresScreen).setVisibility(View.GONE);
+                findViewById(R.id.myScreenMenu).setVisibility(View.VISIBLE);
             }
         });
 
@@ -3727,9 +3849,21 @@ public class myMainMenu extends Activity {
         int backgroundColor = dark ? 0xFF121212 : 0xFFEEEEEE;
         int textColor = dark ? 0xFFFFFFFF : 0xFF000000;
 
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle(caption);
-        alertDialog.setMessage(msg);
+        // setMessage()'s TextView (android.R.id.message) sits inside the dialog's own content
+        // panel, which has its own default (light) background drawable painted on top of
+        // whatever the Window's background is set to - so setWindow().setBackgroundDrawable()
+        // never actually showed through, leaving the panel's default light background behind our
+        // white dark-theme text. A fully custom content view sidesteps the panel background
+        // entirely, since we set its background directly instead of guessing which internal view
+        // owns the visible one.
+        TextView content = new TextView(this);
+        content.setText(caption + "\n\n" + msg);
+        content.setTextColor(textColor);
+        content.setBackgroundColor(backgroundColor);
+        int paddingPx = Math.round(24f * getResources().getDisplayMetrics().density);
+        content.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
+
+        AlertDialog alertDialog = new AlertDialog.Builder(this).setView(content).create();
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Close", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -3738,18 +3872,13 @@ public class myMainMenu extends Activity {
         });
         alertDialog.show();
 
-        // Matches applyTheme()'s colors instead of relying on the system day/night theme, since
-        // this app's dark/light toggle is its own preference, independent of the device's.
-        Window window = alertDialog.getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(backgroundColor));
-        }
-        TextView messageView = alertDialog.findViewById(android.R.id.message);
-        if (messageView != null) {
-            messageView.setTextColor(textColor);
-        }
         Button closeButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         if (closeButton != null) {
+            // Same issue as the message panel: the button bar has its own default light
+            // background that setTextColor() alone leaves untouched, so white-on-white in dark
+            // theme. Fill the button's own background directly rather than relying on the
+            // dialog's default styling.
+            closeButton.setBackgroundColor(backgroundColor);
             closeButton.setTextColor(textColor);
         }
     }
@@ -3763,9 +3892,11 @@ public class myMainMenu extends Activity {
             customHandler.removeCallbacksAndMessages(null);
         }
 
-        boolean isNewHighScore = _score > getHighScore();
-        if (isNewHighScore) {
-            setHighScore(_score);
+        // Only scores worth remembering get added to the top-5 pool - a 0-point game (e.g. the
+        // board filled up before the player scored anything) shouldn't clutter the list.
+        boolean isNewHighScore = false;
+        if (_score > 0) {
+            isNewHighScore = recordScore(_score);
             updateHighScoreDisplay();
         }
 
