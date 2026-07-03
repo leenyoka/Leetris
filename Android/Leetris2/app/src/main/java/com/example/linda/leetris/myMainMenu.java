@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.widget.*;
 import android.content.*;
 import android.app.AlertDialog;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 
 
 public class myMainMenu extends Activity {
@@ -122,6 +124,44 @@ public class myMainMenu extends Activity {
         applyTheme();
         updateResumeButtonVisibility();
         applyResponsiveBoardSizing();
+        setupRotateGesture();
+    }
+
+    // Lets a swipe on the board rotate the camera too, alongside the rotate-view buttons. This
+    // listener sits on Playground itself, not on individual cells/buttons, so it only ever sees
+    // touches that the board's non-clickable cell ImageViews don't consume - button presses are
+    // unaffected since ImageButton/Button already claim their own touches first.
+    private void setupRotateGesture() {
+        final GestureDetector gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            private static final int SWIPE_DISTANCE_THRESHOLD_DP = 60;
+            private static final int SWIPE_VELOCITY_THRESHOLD_DP = 100;
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if (e1 == null) return false;
+                float density = getResources().getDisplayMetrics().density;
+                float diffX = e2.getX() - e1.getX();
+                float diffY = e2.getY() - e1.getY();
+                if (Math.abs(diffX) <= Math.abs(diffY)) return false;
+                if (Math.abs(diffX) <= SWIPE_DISTANCE_THRESHOLD_DP * density) return false;
+                if (Math.abs(velocityX) <= SWIPE_VELOCITY_THRESHOLD_DP * density) return false;
+
+                if (diffX < 0) {
+                    rotateViewRight();
+                } else {
+                    rotateViewLeft();
+                }
+                return true;
+            }
+        });
+
+        View playground = findViewById(R.id.Playground);
+        playground.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
     }
 
     // The board is faked 3D: 7 flat grids (level0 front .. level6 back) stacked with a
@@ -153,7 +193,9 @@ public class myMainMenu extends Activity {
                 float availableWidthDp = widthPx / density;
                 float availableHeightDp = heightPx / density;
 
-                float reservedForControlsDp = 103f;
+                // +71dp over the original 103 makes room for the rotate-view button row that
+                // sits below the movement controls (a 55dp button plus its marginTop/margin gap).
+                float reservedForControlsDp = 174f;
                 float availableBoardHeightDp = availableHeightDp - reservedForControlsDp;
 
                 // Scaled independently per axis (see leftMargin/topMargin formulas below):
@@ -196,7 +238,7 @@ public class myMainMenu extends Activity {
                     }
                 }
 
-                int[] buttonIds = new int[]{R.id.btnLeft, R.id.btnFront, R.id.btnFlipSide, R.id.btnFlip, R.id.btnBack, R.id.btnRight, R.id.btnDrop};
+                int[] buttonIds = new int[]{R.id.btnLeft, R.id.btnFront, R.id.btnFlipSide, R.id.btnFlip, R.id.btnBack, R.id.btnRight, R.id.btnDrop, R.id.btnRotateLeft, R.id.btnRotateRight};
                 int buttonSizePx = Math.round(55f * density);
                 int maxButtonSizePx = widthPx / buttonIds.length;
                 buttonSizePx = Math.min(buttonSizePx, Math.round(maxButtonSizePx * 0.92f));
@@ -319,7 +361,7 @@ public class myMainMenu extends Activity {
 
             @Override
             public void onClick(View view) {
-                MoveLeft();
+                screenMoveLeft();
             }
         });
 
@@ -328,7 +370,7 @@ public class myMainMenu extends Activity {
 
             @Override
             public void onClick(View view) {
-                MoveRight();
+                screenMoveRight();
             }
         });
 
@@ -346,7 +388,7 @@ public class myMainMenu extends Activity {
 
             @Override
             public void onClick(View view) {
-                MoveAllBackwards();
+                screenMoveBack();
             }
         });
 
@@ -355,7 +397,7 @@ public class myMainMenu extends Activity {
 
             @Override
             public void onClick(View view) {
-                MoveAllFoward();
+                screenMoveFront();
             }
         });
 
@@ -374,6 +416,24 @@ public class myMainMenu extends Activity {
             @Override
             public void onClick(View view) {
                 FlipSideWays();
+            }
+        });
+
+        Button btnRotateLeft = (Button) findViewById(R.id.btnRotateLeft);
+        btnRotateLeft.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                rotateViewLeft();
+            }
+        });
+
+        Button btnRotateRight = (Button) findViewById(R.id.btnRotateRight);
+        btnRotateRight.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                rotateViewRight();
             }
         });
     }
@@ -4601,6 +4661,13 @@ public class myMainMenu extends Activity {
         speed = 700;
         level = 1;
         totalLinesCleared = 0;
+        cameraFacing = 0;
+        cellViewCache = null;
+        rotatingView = false;
+        View playground = findViewById(R.id.Playground);
+        if (playground != null) {
+            playground.setRotationY(0);
+        }
         //CleanPreview();
         //showPieces();
     }
@@ -4654,6 +4721,117 @@ public class myMainMenu extends Activity {
     // cells it has already drawn once.
     private ImageView[][][] cellViewCache;
 
+    // Quarter turns (0-3) the view has been rotated around the vertical/row axis. The board's
+    // depth (level, 0-6) and width (col, 0-6) axes are the same size, so orbiting the camera
+    // 90 degrees around the grid is just a 2D rotation of the (level, col) plane - row (gravity)
+    // never changes. This lets the existing stacked/offset level tables double as every facing
+    // without touching the layout or the game/piece logic, which keeps addressing tetrisGrid by
+    // its own (level, row, col) unaware that the camera has moved.
+    private int cameraFacing = 0;
+
+    private int[] rotateForCamera(int level, int col) {
+        switch (cameraFacing) {
+            case 1: return new int[]{col, 6 - level};
+            case 2: return new int[]{6 - level, 6 - col};
+            case 3: return new int[]{6 - col, level};
+            default: return new int[]{level, col};
+        }
+    }
+
+    private boolean rotatingView = false;
+
+    public void rotateViewLeft() {
+        animateCameraTurn(-1);
+    }
+
+    public void rotateViewRight() {
+        animateCameraTurn(1);
+    }
+
+    // Spins the Playground container (all 7 stacked level tables at once, since they're all
+    // children of it) around the vertical axis using View's native rotationY/cameraDistance 3D
+    // transform - no OpenGL or view-hierarchy rewrite needed for the visual effect. The turn is
+    // split in two: rotate out to 90 degrees (edge-on, effectively invisible), swap the cell
+    // content to the new facing at that instant, then rotate back in from -90 to 0. Since a
+    // plane viewed edge-on looks the same from either side, jumping from +90 to -90 mid-turn is
+    // imperceptible and gives the illusion of the board continuing to spin all the way round.
+    private void animateCameraTurn(final int steps) {
+        if (rotatingView) return;
+        rotatingView = true;
+
+        final View playground = findViewById(R.id.Playground);
+        playground.setCameraDistance(8000 * getResources().getDisplayMetrics().density);
+
+        playground.animate()
+                .rotationY(90 * steps)
+                .setDuration(150)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        cameraFacing = (cameraFacing + steps + 4) % 4;
+                        cellViewCache = null;
+                        showPieces();
+
+                        playground.setRotationY(-90 * steps);
+                        playground.animate()
+                                .rotationY(0)
+                                .setDuration(150)
+                                .setListener(new AnimatorListenerAdapter() {
+                                    @Override
+                                    public void onAnimationEnd(Animator animation2) {
+                                        rotatingView = false;
+                                    }
+                                })
+                                .start();
+                    }
+                })
+                .start();
+    }
+
+    // The btnLeft/btnRight/btnFront/btnBack controls move the falling piece along the data
+    // axes (col for left/right, level for front/back). Once the camera has rotated, "data col"
+    // and "data level" no longer line up with "screen left/right" and "screen front/back" - e.g.
+    // after a 90-degree turn, what moves the piece left on screen is now a change in level, not
+    // col. Each quarter turn cyclically permutes which of the four existing move functions
+    // actually corresponds to each screen direction, so the buttons dispatch through here instead
+    // of calling MoveLeft/MoveRight/MoveAllFoward/MoveAllBackwards directly, keeping "left" always
+    // meaning left on screen regardless of cameraFacing.
+    public void screenMoveLeft() {
+        switch (cameraFacing) {
+            case 1: MoveAllBackwards(); break;
+            case 2: MoveRight(); break;
+            case 3: MoveAllFoward(); break;
+            default: MoveLeft(); break;
+        }
+    }
+
+    public void screenMoveRight() {
+        switch (cameraFacing) {
+            case 1: MoveAllFoward(); break;
+            case 2: MoveLeft(); break;
+            case 3: MoveAllBackwards(); break;
+            default: MoveRight(); break;
+        }
+    }
+
+    public void screenMoveFront() {
+        switch (cameraFacing) {
+            case 1: MoveLeft(); break;
+            case 2: MoveAllBackwards(); break;
+            case 3: MoveRight(); break;
+            default: MoveAllFoward(); break;
+        }
+    }
+
+    public void screenMoveBack() {
+        switch (cameraFacing) {
+            case 1: MoveRight(); break;
+            case 2: MoveAllFoward(); break;
+            case 3: MoveLeft(); break;
+            default: MoveAllBackwards(); break;
+        }
+    }
+
     private ImageView getCellView(int level, int row, int col) {
         // Rows above the visible board (the spawn buffer, tetrisGrid rows 0-3 before the -4
         // offset) have no view - e.g. a shadow projection for a piece that can't drop even one
@@ -4667,7 +4845,8 @@ public class myMainMenu extends Activity {
             cellViewCache = new ImageView[7][14][7];
         }
         if (cellViewCache[level][row][col] == null) {
-            int id = getResources().getIdentifier("row" + row + "col" + col + "level" + level, "id", getPackageName());
+            int[] screen = rotateForCamera(level, col);
+            int id = getResources().getIdentifier("row" + row + "col" + screen[1] + "level" + screen[0], "id", getPackageName());
             cellViewCache[level][row][col] = (ImageView) findViewById(id);
         }
         return cellViewCache[level][row][col];
