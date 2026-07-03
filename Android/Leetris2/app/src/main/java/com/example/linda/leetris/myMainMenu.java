@@ -4391,6 +4391,7 @@ public class myMainMenu extends Activity {
         InitializeScreenGrid();
         activeGridBlocks = new String[4];
         speed = 700;
+        level = 1;
         //CleanPreview();
         //showPieces();
     }
