@@ -137,6 +137,15 @@ public class myMainMenu extends Activity {
             private static final int SWIPE_VELOCITY_THRESHOLD_DP = 100;
 
             @Override
+            public boolean onDown(MotionEvent e) {
+                // SimpleOnGestureListener's default onDown() returns false, which makes
+                // GestureDetector.onTouchEvent() return false for ACTION_DOWN - Playground would
+                // then never claim the touch stream, so it'd never see the MOVE/UP events needed
+                // to recognize a fling. Returning true here is what makes swiping work at all.
+                return true;
+            }
+
+            @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
                 if (e1 == null) return false;
                 float density = getResources().getDisplayMetrics().density;
