@@ -239,6 +239,12 @@ public class myMainMenu extends Activity {
         layout2.setVisibility(View.VISIBLE);
 
 
+        if (customHandler != null) {
+            customHandler.removeCallbacksAndMessages(null);
+        }
+        if (timerKeeper != null) {
+            timerKeeper.removeCallbacksAndMessages(null);
+        }
         customHandler = new android.os.Handler();
         customHandler.postDelayed(updateTimerThread, 0);
         timerKeeper = new android.os.Handler();
@@ -3452,6 +3458,13 @@ public class myMainMenu extends Activity {
     public void endGame(boolean showIt)
     {
         started = false;
+
+        if (customHandler != null) {
+            customHandler.removeCallbacksAndMessages(null);
+        }
+        if (timerKeeper != null) {
+            timerKeeper.removeCallbacksAndMessages(null);
+        }
 
         if (showIt)
         {
