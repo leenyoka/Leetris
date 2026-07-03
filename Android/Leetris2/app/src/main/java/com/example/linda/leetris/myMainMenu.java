@@ -239,6 +239,12 @@ public class myMainMenu extends Activity {
         layout2.setVisibility(View.VISIBLE);
 
 
+        if (customHandler != null) {
+            customHandler.removeCallbacksAndMessages(null);
+        }
+        if (timerKeeper != null) {
+            timerKeeper.removeCallbacksAndMessages(null);
+        }
         customHandler = new android.os.Handler();
         customHandler.postDelayed(updateTimerThread, 0);
         timerKeeper = new android.os.Handler();
@@ -3453,6 +3459,13 @@ public class myMainMenu extends Activity {
     {
         started = false;
 
+        if (customHandler != null) {
+            customHandler.removeCallbacksAndMessages(null);
+        }
+        if (timerKeeper != null) {
+            timerKeeper.removeCallbacksAndMessages(null);
+        }
+
         if (showIt)
         {
             ShowMessage("Your score is :" + _score, "Game Over"); //backin
@@ -4391,6 +4404,7 @@ public class myMainMenu extends Activity {
         InitializeScreenGrid();
         activeGridBlocks = new String[4];
         speed = 700;
+        level = 1;
         //CleanPreview();
         //showPieces();
     }
