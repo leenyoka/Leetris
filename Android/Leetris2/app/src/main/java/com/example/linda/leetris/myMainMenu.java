@@ -168,6 +168,19 @@ public class myMainMenu extends Activity {
         getPrefs().edit().putInt("control_slot_" + slotIndex, actionIndex).apply();
     }
 
+    // Cycling a single slot (rather than swapping two) can leave some action unassigned to any
+    // button - e.g. moving Front to "Move left" doesn't relocate the old "Move forward" anywhere,
+    // it just orphans it. Restoring the identity mapping (slot i -> action i) is the only way back
+    // to every action being reachable without tracking which slots to swap.
+    private void resetControlMapping() {
+        SharedPreferences.Editor editor = getPrefs().edit();
+        for (int slotIndex = 0; slotIndex < SLOT_IDS.length; slotIndex++) {
+            editor.putInt("control_slot_" + slotIndex, slotIndex);
+        }
+        editor.apply();
+        applyControlMapping();
+    }
+
     private void performAction(int actionIndex) {
         switch (ACTION_KEYS[actionIndex]) {
             case "move_front": screenMoveFront(); break;
@@ -348,7 +361,7 @@ public class myMainMenu extends Activity {
                 R.id.labelVolume, R.id.btnResume, R.id.btnSettings, R.id.btnExit, R.id.btnSettingsBack,
                 R.id.labelHighScore, R.id.highScoresTitle, R.id.btnHighScoresBack,
                 R.id.btnCustomizeControls, R.id.controlsConfigTitle, R.id.controlsConfigSubtitle,
-                R.id.btnControlsConfigBack};
+                R.id.btnResetControls, R.id.btnControlsConfigBack};
         for (int id : labelIds) {
             View label = findViewById(id);
             if (label instanceof TextView) {
@@ -685,6 +698,15 @@ public class myMainMenu extends Activity {
             public void onClick(View view) {
                 findViewById(R.id.controlsConfigScreen).setVisibility(View.GONE);
                 findViewById(R.id.settingsScreen).setVisibility(View.VISIBLE);
+            }
+        });
+
+        Button btnResetControls = (Button) findViewById(R.id.btnResetControls);
+        btnResetControls.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                resetControlMapping();
             }
         });
 
