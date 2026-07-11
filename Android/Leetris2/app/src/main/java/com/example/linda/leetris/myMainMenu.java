@@ -545,13 +545,20 @@ public class myMainMenu extends Activity {
                 int stepXPx = Math.round(10f * scaleX * density);
                 int stepYPx = Math.round(10f * scaleY * density);
 
-                // Every level table anchors via alignParentLeft with no centering step, so
-                // whenever the board's true width (level6's rightmost extent, 9*step + 7*cell -
-                // see the comment above) doesn't fill 100% of the available width, the leftover
-                // space all ends up on the right and the board sits pinned to the left edge
-                // (issue #1). Splitting the slack evenly as an extra left margin centers it.
-                int boardWidthPx = 9 * stepXPx + 7 * cellWidthPx;
-                int centeringOffsetPx = Math.max(0, (widthPx - boardWidthPx) / 2);
+                // Every level table anchors via alignParentLeft with no centering step, so the
+                // whole shape sits pinned toward the left edge (issue #1). The shape's true total
+                // width is level6's right edge MINUS level0's left edge - (9*step + 7*cell) -
+                // (3*step) = 6*step + 7*cell - not just level6's rightmost extent on its own,
+                // which double-counts level0's own inherent 3*step offset and produces a
+                // lopsided result (a first attempt at this fix got exactly that wrong).
+                // centeringOffsetPx is deliberately allowed to go negative here: level0's built-in
+                // 3*step offset is often bigger than half the actual leftover width, so true
+                // centering requires shifting everything back left past zero offset, not just
+                // adding more. It's only floored at -3*stepXPx, the point where level0's own
+                // leftMargin would otherwise go negative and push it off Playground's left edge.
+                int boardWidthPx = 6 * stepXPx + 7 * cellWidthPx;
+                int centeringOffsetPx = (widthPx - boardWidthPx) / 2 - 3 * stepXPx;
+                centeringOffsetPx = Math.max(centeringOffsetPx, -3 * stepXPx);
 
                 for (int level = 0; level <= 6; level++) {
                     for (int row = 0; row <= 13; row++) {
@@ -572,6 +579,15 @@ public class myMainMenu extends Activity {
                     View table = findViewById(tableId);
                     if (table != null) {
                         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) table.getLayoutParams();
+                        // TableLayout has a long-standing platform quirk where it doesn't actually
+                        // respect layout_width="wrap_content" and stretches wider than its real
+                        // cell content regardless. Left alone, that stretch keeps the table's
+                        // right edge pinned near Playground's own right edge no matter what
+                        // leftMargin/centeringOffsetPx above says - the centering fix would just
+                        // shrink the visible gap from one side instead of splitting it evenly.
+                        // Pinning the width explicitly to the real 7-cell content size is what
+                        // makes the centering offset actually take effect.
+                        lp.width = cellWidthPx * 7;
                         lp.topMargin = -(level + 1) * stepYPx;
                         lp.leftMargin = centeringOffsetPx + (level + 3) * stepXPx;
                         table.setLayoutParams(lp);
