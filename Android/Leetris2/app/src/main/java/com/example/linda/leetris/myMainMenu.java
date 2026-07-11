@@ -119,12 +119,15 @@ public class myMainMenu extends Activity {
         }
     }
 
-    // Lets players remap which of the 9 control buttons performs which action (issue #7).
-    // Every slot is a plain Button showing one of these glyphs rather than a mix of ImageButton
-    // icons and text buttons, so any action can be assigned to any slot - the glyph is all that
-    // has to change. SLOT_IDS (the live in-game buttons) and CFG_SLOT_IDS (their mirror on the
-    // Customize Controls screen) are listed in the same order as ACTION_KEYS/ACTION_GLYPHS, which
-    // is also each slot's default action (an identity mapping) before the player changes anything.
+    // Lets players remap which of the 9 control buttons performs which action (issue #7), within
+    // two groups: the first 7 (move/drop/flip) are icon-based ImageButtons using the original PNG
+    // art, and the last 2 (rotate-view) are text/glyph Buttons since no icon art exists for them.
+    // A slot can only cycle through actions of its own group - an ImageButton can't show a
+    // rotate-view glyph, and a plain Button can't show the movement icons. SLOT_IDS (the live
+    // in-game buttons) and CFG_SLOT_IDS (their mirror on the Customize Controls screen) are listed
+    // in the same order as ACTION_KEYS/ACTION_ICONS/ACTION_GLYPHS, which is also each slot's
+    // default action (an identity mapping) before the player changes anything.
+    private static final int ICON_ACTION_COUNT = 7;
     private static final String[] ACTION_KEYS = {
             "move_front", "move_left", "drop", "move_right", "move_back",
             "flip", "flip_side", "rotate_view_left", "rotate_view_right"
@@ -133,9 +136,14 @@ public class myMainMenu extends Activity {
             "Move forward", "Move left", "Hard drop", "Move right", "Move backward",
             "Flip piece", "Flip piece sideways", "Rotate view left", "Rotate view right"
     };
+    // Only used for the first ICON_ACTION_COUNT entries; the rest are icon-less rotate-view slots.
+    private static final int[] ACTION_ICONS = {
+            R.drawable.foward, R.drawable.left, R.drawable.drop, R.drawable.right, R.drawable.backwards,
+            R.drawable.flip, R.drawable.flipsideways, 0, 0
+    };
+    // Only used for the last two (rotate-view) entries; the icon slots ignore this.
     private static final String[] ACTION_GLYPHS = {
-            "▲", "◀", "⤓", "▶", "▼",
-            "⟳", "⟲", "↺", "↻"
+            "", "", "", "", "", "", "", "↺", "↻"
     };
     private static final int[] SLOT_IDS = {
             R.id.btnFront, R.id.btnLeft, R.id.btnDrop, R.id.btnRight, R.id.btnBack,
@@ -147,7 +155,13 @@ public class myMainMenu extends Activity {
     };
 
     private int getSlotAction(int slotIndex) {
-        return getPrefs().getInt("control_slot_" + slotIndex, slotIndex);
+        int stored = getPrefs().getInt("control_slot_" + slotIndex, slotIndex);
+        // Defends against stale prefs from before remapping was restricted to same-type groups -
+        // an icon slot holding a rotate-view action (or vice versa) would crash applyControlMapping().
+        boolean slotIsIcon = slotIndex < ICON_ACTION_COUNT;
+        boolean storedIsIcon = stored < ICON_ACTION_COUNT;
+        if (slotIsIcon != storedIsIcon) return slotIndex;
+        return stored;
     }
 
     private void setSlotAction(int slotIndex, int actionIndex) {
@@ -168,22 +182,23 @@ public class myMainMenu extends Activity {
         }
     }
 
-    // Refreshes every live and Customize-Controls button's glyph from the persisted mapping.
+    // Refreshes every live and Customize-Controls button's icon/glyph from the persisted mapping.
     // Called on create and whenever a slot's assignment changes.
     private void applyControlMapping() {
         for (int slotIndex = 0; slotIndex < SLOT_IDS.length; slotIndex++) {
-            String glyph = ACTION_GLYPHS[getSlotAction(slotIndex)];
-            String label = ACTION_LABELS[getSlotAction(slotIndex)];
+            int actionIndex = getSlotAction(slotIndex);
+            String label = ACTION_LABELS[actionIndex];
+            boolean isIconSlot = slotIndex < ICON_ACTION_COUNT;
 
-            Button liveButton = (Button) findViewById(SLOT_IDS[slotIndex]);
-            if (liveButton != null) {
-                liveButton.setText(glyph);
-                liveButton.setContentDescription(label);
-            }
-            Button cfgButton = (Button) findViewById(CFG_SLOT_IDS[slotIndex]);
-            if (cfgButton != null) {
-                cfgButton.setText(glyph);
-                cfgButton.setContentDescription(label);
+            for (int id : new int[]{SLOT_IDS[slotIndex], CFG_SLOT_IDS[slotIndex]}) {
+                View button = findViewById(id);
+                if (button == null) continue;
+                if (isIconSlot) {
+                    ((ImageButton) button).setImageResource(ACTION_ICONS[actionIndex]);
+                } else {
+                    ((Button) button).setText(ACTION_GLYPHS[actionIndex]);
+                }
+                button.setContentDescription(label);
             }
         }
     }
@@ -191,8 +206,9 @@ public class myMainMenu extends Activity {
     private void setupControlButtons() {
         for (int i = 0; i < SLOT_IDS.length; i++) {
             final int slotIndex = i;
+            final boolean isIconSlot = slotIndex < ICON_ACTION_COUNT;
 
-            Button liveButton = (Button) findViewById(SLOT_IDS[slotIndex]);
+            View liveButton = findViewById(SLOT_IDS[slotIndex]);
             liveButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -200,11 +216,18 @@ public class myMainMenu extends Activity {
                 }
             });
 
-            Button cfgButton = (Button) findViewById(CFG_SLOT_IDS[slotIndex]);
+            View cfgButton = findViewById(CFG_SLOT_IDS[slotIndex]);
             cfgButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int nextAction = (getSlotAction(slotIndex) + 1) % ACTION_KEYS.length;
+                    int current = getSlotAction(slotIndex);
+                    int nextAction;
+                    if (isIconSlot) {
+                        nextAction = (current + 1) % ICON_ACTION_COUNT;
+                    } else {
+                        int textGroupSize = ACTION_KEYS.length - ICON_ACTION_COUNT;
+                        nextAction = ICON_ACTION_COUNT + ((current - ICON_ACTION_COUNT + 1) % textGroupSize);
+                    }
                     setSlotAction(slotIndex, nextAction);
                     applyControlMapping();
                     playTone(TONE_MOVE, 40);
@@ -345,13 +368,15 @@ public class myMainMenu extends Activity {
             TextView label = (TextView) findViewById(id);
             if (label != null) label.setTextColor(textColor);
         }
+        // Only the rotate-view slots (the tail end, past ICON_ACTION_COUNT) are text buttons -
+        // the rest are ImageButtons (not a TextView subclass, so a direct cast would crash).
         for (int id : SLOT_IDS) {
-            TextView label = (TextView) findViewById(id);
-            if (label != null) label.setTextColor(textColor);
+            View button = findViewById(id);
+            if (button instanceof TextView) ((TextView) button).setTextColor(textColor);
         }
         for (int id : CFG_SLOT_IDS) {
-            TextView label = (TextView) findViewById(id);
-            if (label != null) label.setTextColor(textColor);
+            View button = findViewById(id);
+            if (button instanceof TextView) ((TextView) button).setTextColor(textColor);
         }
     }
 

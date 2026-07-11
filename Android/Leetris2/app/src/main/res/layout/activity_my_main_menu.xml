@@ -256,19 +256,19 @@
 
                 <TableRow>
                     <View android:layout_width="55dp" android:layout_height="55dp" />
-                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgFront" />
+                    <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:id="@+id/cfgFront" />
                     <View android:layout_width="55dp" android:layout_height="55dp" />
                 </TableRow>
 
                 <TableRow>
-                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgLeft" />
-                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgDrop" />
-                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgRight" />
+                    <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:id="@+id/cfgLeft" />
+                    <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:id="@+id/cfgDrop" />
+                    <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:id="@+id/cfgRight" />
                 </TableRow>
 
                 <TableRow>
                     <View android:layout_width="55dp" android:layout_height="55dp" />
-                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgBack" />
+                    <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:id="@+id/cfgBack" />
                     <View android:layout_width="55dp" android:layout_height="55dp" />
                 </TableRow>
 
@@ -281,8 +281,8 @@
                 android:layout_height="wrap_content">
 
                 <TableRow>
-                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgFlip" />
-                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgFlipSide" />
+                    <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:id="@+id/cfgFlip" />
+                    <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:id="@+id/cfgFlipSide" />
                 </TableRow>
 
                 <TableRow>
@@ -4145,10 +4145,11 @@
 
     <!-- Two side-by-side clusters instead of one mixed row (issue #3): a D-pad on the left groups
          the 4 directional moves around a center Drop button (the action most tied to movement),
-         and a separate cluster on the right holds the flip/rotate-view actions. All 9 are plain
-         Button/text glyphs (not ImageButton/PNG icons) so any action can be remapped onto any
-         slot (issue #7) - the glyph just changes with whatever's assigned. Initial text below is
-         only a placeholder; applyControlMapping() sets the real glyph per the persisted mapping. -->
+         and a separate cluster on the right holds the flip/rotate-view actions. The 7
+         movement/flip/drop slots are icon-based ImageButtons (original PNG art); the 2
+         rotate-view slots stay text/glyph Buttons since no icon art exists for them. Remapping
+         (issue #7) is restricted to within each group for exactly this reason - see
+         performAction()/applyControlMapping() in myMainMenu.java. -->
     <LinearLayout
         android:id="@+id/controlsBar"
         android:layout_width="wrap_content"
@@ -4166,19 +4167,19 @@
 
             <TableRow>
                 <View android:layout_width="55dp" android:layout_height="55dp" />
-                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnFront" />
+                <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:src="@drawable/foward" android:id="@+id/btnFront" />
                 <View android:layout_width="55dp" android:layout_height="55dp" />
             </TableRow>
 
             <TableRow>
-                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnLeft" />
-                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnDrop" />
-                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnRight" />
+                <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:src="@drawable/left" android:id="@+id/btnLeft" />
+                <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:src="@drawable/drop" android:id="@+id/btnDrop" />
+                <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:src="@drawable/right" android:id="@+id/btnRight" />
             </TableRow>
 
             <TableRow>
                 <View android:layout_width="55dp" android:layout_height="55dp" />
-                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnBack" />
+                <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:src="@drawable/backwards" android:id="@+id/btnBack" />
                 <View android:layout_width="55dp" android:layout_height="55dp" />
             </TableRow>
 
@@ -4192,8 +4193,8 @@
             android:layout_height="wrap_content">
 
             <TableRow>
-                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnFlip" />
-                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnFlipSide" />
+                <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:src="@drawable/flip" android:id="@+id/btnFlip" />
+                <ImageButton android:layout_width="55dp" android:layout_height="55dp" android:scaleType="fitCenter" android:src="@drawable/flipsideways" android:id="@+id/btnFlipSide" />
             </TableRow>
 
             <TableRow>
