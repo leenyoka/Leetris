@@ -78,11 +78,12 @@
             android:id="@+id/settingsTitle" />
 
         <TableLayout
+            android:id="@+id/settingsControlsTable"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/settingsTitle"
             android:layout_marginTop="40dp"
-            android:stretchColumns="0">
+            android:stretchColumns="0,1">
 
             <TableRow
                 android:layout_marginBottom="20dp">
@@ -96,6 +97,21 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/switchSound" />
+            </TableRow>
+
+            <TableRow
+                android:layout_marginBottom="20dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="Volume"
+                    android:id="@+id/labelVolume" />
+                <SeekBar
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:max="100"
+                    android:id="@+id/seekVolume" />
             </TableRow>
 
             <TableRow>
@@ -112,6 +128,14 @@
             </TableRow>
 
         </TableLayout>
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/settingsControlsTable"
+            android:layout_marginTop="24dp"
+            android:text="Customize Controls"
+            android:id="@+id/btnCustomizeControls" />
 
         <Button
             android:layout_width="fill_parent"
@@ -185,6 +209,98 @@
             android:layout_marginBottom="40dp"
             android:text="Back"
             android:id="@+id/btnHighScoresBack" />
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:visibility="gone"
+        android:id="@+id/controlsConfigScreen">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="80dp"
+            android:textSize="28sp"
+            android:text="Customize Controls"
+            android:id="@+id/controlsConfigTitle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/controlsConfigTitle"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="8dp"
+            android:textSize="14sp"
+            android:text="Tap a button to cycle through actions"
+            android:id="@+id/controlsConfigSubtitle" />
+
+        <!-- Mirrors controlsBar's own D-pad/actions cluster shape exactly (issue #7), so this is
+             a WYSIWYG editor: each button here is the same physical slot as in-game, and tapping
+             it cycles ACTION_KEYS and updates both this button's and the live button's glyph. -->
+        <LinearLayout
+            android:id="@+id/controlsConfigBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/controlsConfigSubtitle"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="48dp"
+            android:orientation="horizontal">
+
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TableRow>
+                    <View android:layout_width="55dp" android:layout_height="55dp" />
+                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgFront" />
+                    <View android:layout_width="55dp" android:layout_height="55dp" />
+                </TableRow>
+
+                <TableRow>
+                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgLeft" />
+                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgDrop" />
+                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgRight" />
+                </TableRow>
+
+                <TableRow>
+                    <View android:layout_width="55dp" android:layout_height="55dp" />
+                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgBack" />
+                    <View android:layout_width="55dp" android:layout_height="55dp" />
+                </TableRow>
+
+            </TableLayout>
+
+            <View android:layout_width="24dp" android:layout_height="1dp" />
+
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TableRow>
+                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgFlip" />
+                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgFlipSide" />
+                </TableRow>
+
+                <TableRow>
+                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgRotateLeft" />
+                    <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/cfgRotateRight" />
+                </TableRow>
+
+            </TableLayout>
+
+        </LinearLayout>
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="40dp"
+            android:text="Back"
+            android:id="@+id/btnControlsConfigBack" />
 
     </RelativeLayout>
     <RelativeLayout
@@ -4027,104 +4143,65 @@
     </TableLayout>
 
 
-    <TableLayout
-        android:id="@+id/controlsBar"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/level0Table"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="false"
-        android:layout_marginTop="32dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:visibility="visible"
-        android:layout_marginBottom="16dp">
-        <TableRow>
-
-            <ImageButton
-                android:layout_width="55dp"
-                android:layout_height="55dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/left"
-                android:id="@+id/btnLeft"
-                android:layout_column="0" />
-
-            <ImageButton
-                android:layout_width="55dp"
-                android:layout_height="55dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/foward"
-                android:id="@+id/btnFront"
-                android:layout_column="1" />
-            <ImageButton
-                android:layout_width="55dp"
-                android:layout_height="55dp"
-                android:src="@drawable/flipsideways"
-                android:scaleType="fitCenter"
-                android:id="@+id/btnFlipSide"
-                android:layout_column="2" />
-
-            <ImageButton
-                android:layout_width="55dp"
-                android:layout_height="55dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/flip"
-                android:id="@+id/btnFlip"
-                android:layout_column="2" />
-
-
-            <ImageButton
-                android:layout_width="55dp"
-                android:layout_height="55dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/backwards"
-                android:id="@+id/btnBack"
-                android:layout_column="3" />
-
-            <ImageButton
-                android:layout_width="55dp"
-                android:layout_height="55dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/right"
-                android:id="@+id/btnRight"
-                android:layout_column="4" />
-
-            <ImageButton
-                android:layout_width="55dp"
-                android:layout_height="55dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/drop"
-                android:id="@+id/btnDrop"
-                android:layout_column="5" />
-        </TableRow>
-
-
-    </TableLayout>
-
+    <!-- Two side-by-side clusters instead of one mixed row (issue #3): a D-pad on the left groups
+         the 4 directional moves around a center Drop button (the action most tied to movement),
+         and a separate cluster on the right holds the flip/rotate-view actions. All 9 are plain
+         Button/text glyphs (not ImageButton/PNG icons) so any action can be remapped onto any
+         slot (issue #7) - the glyph just changes with whatever's assigned. Initial text below is
+         only a placeholder; applyControlMapping() sets the real glyph per the persisted mapping. -->
     <LinearLayout
-        android:id="@+id/rotateControlsBar"
+        android:id="@+id/controlsBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/controlsBar"
+        android:layout_below="@id/level0Table"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="16dp"
         android:orientation="horizontal">
 
-        <Button
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:textSize="24sp"
-            android:contentDescription="Rotate view left"
-            android:text="↺"
-            android:id="@+id/btnRotateLeft" />
+        <TableLayout
+            android:id="@+id/dpadCluster"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
-        <Button
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:layout_marginLeft="16dp"
-            android:textSize="24sp"
-            android:contentDescription="Rotate view right"
-            android:text="↻"
-            android:id="@+id/btnRotateRight" />
+            <TableRow>
+                <View android:layout_width="55dp" android:layout_height="55dp" />
+                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnFront" />
+                <View android:layout_width="55dp" android:layout_height="55dp" />
+            </TableRow>
+
+            <TableRow>
+                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnLeft" />
+                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnDrop" />
+                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnRight" />
+            </TableRow>
+
+            <TableRow>
+                <View android:layout_width="55dp" android:layout_height="55dp" />
+                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnBack" />
+                <View android:layout_width="55dp" android:layout_height="55dp" />
+            </TableRow>
+
+        </TableLayout>
+
+        <View android:layout_width="24dp" android:layout_height="1dp" />
+
+        <TableLayout
+            android:id="@+id/actionsCluster"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TableRow>
+                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnFlip" />
+                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnFlipSide" />
+            </TableRow>
+
+            <TableRow>
+                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnRotateLeft" />
+                <Button android:layout_width="55dp" android:layout_height="55dp" android:textSize="24sp" android:id="@+id/btnRotateRight" />
+            </TableRow>
+
+        </TableLayout>
 
     </LinearLayout>
 

@@ -11,6 +11,8 @@ import android.content.*;
 import android.app.AlertDialog;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 
 
 public class myMainMenu extends Activity {
@@ -20,6 +22,8 @@ public class myMainMenu extends Activity {
     private static final String PREF_DARK_THEME = "dark_theme";
     private static final String PREF_HIGH_SCORES = "high_scores";
     private static final int MAX_HIGH_SCORES = 5;
+    private static final String PREF_VOLUME = "volume";
+    private static final int DEFAULT_VOLUME = 80;
 
     // One row of the top-5 list: a score and when it was set. Stored serialized as
     // "score,epochMillis" entries joined by ";" in a single SharedPreferences string, rather than
@@ -58,6 +62,157 @@ public class myMainMenu extends Activity {
     private void setDarkTheme(boolean dark) {
         getPrefs().edit().putBoolean(PREF_DARK_THEME, dark).apply();
         applyTheme();
+    }
+
+    private int getVolume() {
+        return getPrefs().getInt(PREF_VOLUME, DEFAULT_VOLUME);
+    }
+
+    private void setVolume(int volumePercent) {
+        getPrefs().edit().putInt(PREF_VOLUME, volumePercent).apply();
+        // Force the next playTone() to rebuild the generator at the new volume, since
+        // ToneGenerator's volume is fixed at construction time (see getToneGenerator()).
+        toneGeneratorVolume = -1;
+    }
+
+    // There's no sound asset pipeline in this project (no audio files, no SoundPool/MediaPlayer
+    // anywhere) - ToneGenerator synthesizes short tones purely in code, with a real volume
+    // parameter, instead of needing sourced/recorded sound effect files. Differentiated mainly by
+    // duration across a small set of the generic (non-CDMA-specific) tone constants.
+    private static final int TONE_MOVE = ToneGenerator.TONE_PROP_BEEP;
+    private static final int TONE_ROTATE = ToneGenerator.TONE_PROP_BEEP2;
+    private static final int TONE_DROP = ToneGenerator.TONE_PROP_ACK;
+    private static final int TONE_LINE_CLEAR = ToneGenerator.TONE_PROP_ACK;
+    private static final int TONE_GAME_OVER = ToneGenerator.TONE_PROP_NACK;
+    private static final int TONE_NEW_HIGH_SCORE = ToneGenerator.TONE_PROP_BEEP2;
+
+    private ToneGenerator toneGenerator;
+    private int toneGeneratorVolume = -1;
+
+    private ToneGenerator getToneGenerator() {
+        int volume = getVolume();
+        if (toneGenerator == null || toneGeneratorVolume != volume) {
+            if (toneGenerator != null) {
+                toneGenerator.release();
+            }
+            toneGenerator = new ToneGenerator(AudioManager.STREAM_MUSIC, volume);
+            toneGeneratorVolume = volume;
+        }
+        return toneGenerator;
+    }
+
+    private void playTone(int toneType, int durationMs) {
+        if (!isSoundEnabled()) return;
+        try {
+            getToneGenerator().startTone(toneType, durationMs);
+        } catch (RuntimeException ex) {
+            // Best-effort - a device with no usable audio output shouldn't crash gameplay.
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (toneGenerator != null) {
+            toneGenerator.release();
+            toneGenerator = null;
+        }
+    }
+
+    // Lets players remap which of the 9 control buttons performs which action (issue #7).
+    // Every slot is a plain Button showing one of these glyphs rather than a mix of ImageButton
+    // icons and text buttons, so any action can be assigned to any slot - the glyph is all that
+    // has to change. SLOT_IDS (the live in-game buttons) and CFG_SLOT_IDS (their mirror on the
+    // Customize Controls screen) are listed in the same order as ACTION_KEYS/ACTION_GLYPHS, which
+    // is also each slot's default action (an identity mapping) before the player changes anything.
+    private static final String[] ACTION_KEYS = {
+            "move_front", "move_left", "drop", "move_right", "move_back",
+            "flip", "flip_side", "rotate_view_left", "rotate_view_right"
+    };
+    private static final String[] ACTION_LABELS = {
+            "Move forward", "Move left", "Hard drop", "Move right", "Move backward",
+            "Flip piece", "Flip piece sideways", "Rotate view left", "Rotate view right"
+    };
+    private static final String[] ACTION_GLYPHS = {
+            "▲", "◀", "⤓", "▶", "▼",
+            "⟳", "⟲", "↺", "↻"
+    };
+    private static final int[] SLOT_IDS = {
+            R.id.btnFront, R.id.btnLeft, R.id.btnDrop, R.id.btnRight, R.id.btnBack,
+            R.id.btnFlip, R.id.btnFlipSide, R.id.btnRotateLeft, R.id.btnRotateRight
+    };
+    private static final int[] CFG_SLOT_IDS = {
+            R.id.cfgFront, R.id.cfgLeft, R.id.cfgDrop, R.id.cfgRight, R.id.cfgBack,
+            R.id.cfgFlip, R.id.cfgFlipSide, R.id.cfgRotateLeft, R.id.cfgRotateRight
+    };
+
+    private int getSlotAction(int slotIndex) {
+        return getPrefs().getInt("control_slot_" + slotIndex, slotIndex);
+    }
+
+    private void setSlotAction(int slotIndex, int actionIndex) {
+        getPrefs().edit().putInt("control_slot_" + slotIndex, actionIndex).apply();
+    }
+
+    private void performAction(int actionIndex) {
+        switch (ACTION_KEYS[actionIndex]) {
+            case "move_front": screenMoveFront(); break;
+            case "move_left": screenMoveLeft(); break;
+            case "drop": drop(); break;
+            case "move_right": screenMoveRight(); break;
+            case "move_back": screenMoveBack(); break;
+            case "flip": flip(); break;
+            case "flip_side": FlipSideWays(); break;
+            case "rotate_view_left": rotateViewLeft(); break;
+            case "rotate_view_right": rotateViewRight(); break;
+        }
+    }
+
+    // Refreshes every live and Customize-Controls button's glyph from the persisted mapping.
+    // Called on create and whenever a slot's assignment changes.
+    private void applyControlMapping() {
+        for (int slotIndex = 0; slotIndex < SLOT_IDS.length; slotIndex++) {
+            String glyph = ACTION_GLYPHS[getSlotAction(slotIndex)];
+            String label = ACTION_LABELS[getSlotAction(slotIndex)];
+
+            Button liveButton = (Button) findViewById(SLOT_IDS[slotIndex]);
+            if (liveButton != null) {
+                liveButton.setText(glyph);
+                liveButton.setContentDescription(label);
+            }
+            Button cfgButton = (Button) findViewById(CFG_SLOT_IDS[slotIndex]);
+            if (cfgButton != null) {
+                cfgButton.setText(glyph);
+                cfgButton.setContentDescription(label);
+            }
+        }
+    }
+
+    private void setupControlButtons() {
+        for (int i = 0; i < SLOT_IDS.length; i++) {
+            final int slotIndex = i;
+
+            Button liveButton = (Button) findViewById(SLOT_IDS[slotIndex]);
+            liveButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    performAction(getSlotAction(slotIndex));
+                }
+            });
+
+            Button cfgButton = (Button) findViewById(CFG_SLOT_IDS[slotIndex]);
+            cfgButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int nextAction = (getSlotAction(slotIndex) + 1) % ACTION_KEYS.length;
+                    setSlotAction(slotIndex, nextAction);
+                    applyControlMapping();
+                    playTone(TONE_MOVE, 40);
+                }
+            });
+        }
+
+        applyControlMapping();
     }
 
     private List<HighScoreEntry> getHighScores() {
@@ -167,8 +322,10 @@ public class myMainMenu extends Activity {
         }
 
         int[] labelIds = new int[]{R.id.settingsTitle, R.id.labelSound, R.id.labelTheme,
-                R.id.btnResume, R.id.btnSettings, R.id.btnExit, R.id.btnSettingsBack,
-                R.id.labelHighScore, R.id.highScoresTitle, R.id.btnHighScoresBack};
+                R.id.labelVolume, R.id.btnResume, R.id.btnSettings, R.id.btnExit, R.id.btnSettingsBack,
+                R.id.labelHighScore, R.id.highScoresTitle, R.id.btnHighScoresBack,
+                R.id.btnCustomizeControls, R.id.controlsConfigTitle, R.id.controlsConfigSubtitle,
+                R.id.btnControlsConfigBack};
         for (int id : labelIds) {
             View label = findViewById(id);
             if (label instanceof TextView) {
@@ -185,6 +342,14 @@ public class myMainMenu extends Activity {
             if (label != null) label.setTextColor(textColor);
         }
         for (int id : SCORE_DATE_IDS) {
+            TextView label = (TextView) findViewById(id);
+            if (label != null) label.setTextColor(textColor);
+        }
+        for (int id : SLOT_IDS) {
+            TextView label = (TextView) findViewById(id);
+            if (label != null) label.setTextColor(textColor);
+        }
+        for (int id : CFG_SLOT_IDS) {
             TextView label = (TextView) findViewById(id);
             if (label != null) label.setTextColor(textColor);
         }
@@ -321,9 +486,10 @@ public class myMainMenu extends Activity {
                 float availableWidthDp = widthPx / density;
                 float availableHeightDp = heightPx / density;
 
-                // +71dp over the original 103 makes room for the rotate-view button row that
-                // sits below the movement controls (a 55dp button plus its marginTop/margin gap).
-                float reservedForControlsDp = 174f;
+                // controlsBar is now a 3-row D-pad cluster (55dp per row) beside a 2-row actions
+                // cluster (issue #3) instead of stacked single-row bars: 32dp marginTop + 165dp
+                // for the taller (D-pad) cluster + 16dp marginBottom = 213dp.
+                float reservedForControlsDp = 213f;
                 float availableBoardHeightDp = availableHeightDp - reservedForControlsDp;
 
                 // Scaled independently per axis (see leftMargin/topMargin formulas below):
@@ -340,6 +506,14 @@ public class myMainMenu extends Activity {
                 int cellHeightPx = Math.round(25f * scaleY * density);
                 int stepXPx = Math.round(10f * scaleX * density);
                 int stepYPx = Math.round(10f * scaleY * density);
+
+                // Every level table anchors via alignParentLeft with no centering step, so
+                // whenever the board's true width (level6's rightmost extent, 9*step + 7*cell -
+                // see the comment above) doesn't fill 100% of the available width, the leftover
+                // space all ends up on the right and the board sits pinned to the left edge
+                // (issue #1). Splitting the slack evenly as an extra left margin centers it.
+                int boardWidthPx = 9 * stepXPx + 7 * cellWidthPx;
+                int centeringOffsetPx = Math.max(0, (widthPx - boardWidthPx) / 2);
 
                 for (int level = 0; level <= 6; level++) {
                     for (int row = 0; row <= 13; row++) {
@@ -361,7 +535,7 @@ public class myMainMenu extends Activity {
                     if (table != null) {
                         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) table.getLayoutParams();
                         lp.topMargin = -(level + 1) * stepYPx;
-                        lp.leftMargin = (level + 3) * stepXPx;
+                        lp.leftMargin = centeringOffsetPx + (level + 3) * stepXPx;
                         table.setLayoutParams(lp);
                     }
                 }
@@ -441,6 +615,8 @@ public class myMainMenu extends Activity {
                 soundSwitch.setChecked(isSoundEnabled());
                 Switch themeSwitch = (Switch) findViewById(R.id.switchTheme);
                 themeSwitch.setChecked(isDarkTheme());
+                SeekBar volumeSeekBar = (SeekBar) findViewById(R.id.seekVolume);
+                volumeSeekBar.setProgress(getVolume());
 
                 findViewById(R.id.myScreenMenu).setVisibility(View.GONE);
                 findViewById(R.id.settingsScreen).setVisibility(View.VISIBLE);
@@ -463,6 +639,27 @@ public class myMainMenu extends Activity {
             public void onClick(View view) {
                 findViewById(R.id.highScoresScreen).setVisibility(View.GONE);
                 findViewById(R.id.myScreenMenu).setVisibility(View.VISIBLE);
+            }
+        });
+
+        Button btnCustomizeControls = (Button) findViewById(R.id.btnCustomizeControls);
+        btnCustomizeControls.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                applyControlMapping();
+                findViewById(R.id.settingsScreen).setVisibility(View.GONE);
+                findViewById(R.id.controlsConfigScreen).setVisibility(View.VISIBLE);
+            }
+        });
+
+        Button btnControlsConfigBack = (Button) findViewById(R.id.btnControlsConfigBack);
+        btnControlsConfigBack.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                findViewById(R.id.controlsConfigScreen).setVisibility(View.GONE);
+                findViewById(R.id.settingsScreen).setVisibility(View.VISIBLE);
             }
         });
 
@@ -503,86 +700,28 @@ public class myMainMenu extends Activity {
             }
         });
 
-        ImageButton btnLeft = (ImageButton) findViewById(R.id.btnLeft);
-        btnLeft.setOnClickListener(new View.OnClickListener() {
+        SeekBar seekVolume = (SeekBar) findViewById(R.id.seekVolume);
+        seekVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
-            public void onClick(View view) {
-                screenMoveLeft();
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    setVolume(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // Sample tone so the player can hear the level they just picked.
+                playTone(TONE_MOVE, 40);
             }
         });
 
-        ImageButton btnRight = (ImageButton) findViewById(R.id.btnRight);
-        btnRight.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                screenMoveRight();
-            }
-        });
-
-        ImageButton btnDrop = (ImageButton) findViewById(R.id.btnDrop);
-        btnDrop.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                drop();
-            }
-        });
-
-        ImageButton btnBack = (ImageButton) findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                screenMoveBack();
-            }
-        });
-
-        ImageButton btnFoward = (ImageButton) findViewById(R.id.btnFront);
-        btnFoward.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                screenMoveFront();
-            }
-        });
-
-        ImageButton btnFlip = (ImageButton) findViewById(R.id.btnFlip);
-        btnFlip.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                flip();
-            }
-        });
-
-        ImageButton btnFlipSide = (ImageButton) findViewById(R.id.btnFlipSide);
-        btnFlipSide.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                FlipSideWays();
-            }
-        });
-
-        Button btnRotateLeft = (Button) findViewById(R.id.btnRotateLeft);
-        btnRotateLeft.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                rotateViewLeft();
-            }
-        });
-
-        Button btnRotateRight = (Button) findViewById(R.id.btnRotateRight);
-        btnRotateRight.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                rotateViewRight();
-            }
-        });
+        setupControlButtons();
     }
 
     @Override
@@ -3903,8 +4042,10 @@ public class myMainMenu extends Activity {
         if (showIt)
         {
             if (isNewHighScore) {
+                playTone(TONE_NEW_HIGH_SCORE, 500);
                 ShowMessage("New high score! You scored " + _score + ".", "Congratulations!");
             } else {
+                playTone(TONE_GAME_OVER, 400);
                 ShowMessage("Your score is :" + _score, "Game Over"); //backin
             }
             //ScreenGame.Visibility = System.Windows.Visibility.Collapsed;
@@ -4101,6 +4242,7 @@ public class myMainMenu extends Activity {
                 if(canFlipSideways()) {
                     MoveAllSideways(sideWayPieces);
                     showPieces();
+                    playTone(TONE_ROTATE, 60);
                 }
     }
     public void MoveAllSideways(String[] values)
@@ -4295,6 +4437,7 @@ public class myMainMenu extends Activity {
         {
             MoveAll(0, 0, -1);
             showPieces();
+            playTone(TONE_MOVE, 40);
         }
         busy = false;
         keyPressesEnabled = true;
@@ -4334,6 +4477,7 @@ public class myMainMenu extends Activity {
         {
             MoveAll(0, 0, 1);
             showPieces();
+            playTone(TONE_MOVE, 40);
         }
         busy = false;
         keyPressesEnabled = true;
@@ -4420,6 +4564,7 @@ public class myMainMenu extends Activity {
         if (ActivateNewFlip(((tetrisGrid.get(level))[row][ col]), true))
         {
             showPieces();
+            playTone(TONE_ROTATE, 60);
             busy = false;
             keyPressesEnabled = true;
             return true;
@@ -4444,6 +4589,7 @@ public class myMainMenu extends Activity {
 
             MoveAllLeft();
             showPieces();
+            playTone(TONE_MOVE, 40);
             busy = false;
             keyPressesEnabled = true;
             return true;
@@ -4518,6 +4664,7 @@ public class myMainMenu extends Activity {
                 }
                 score(linesForFullRows);
                 checkLevelUp(linesForFullRows);
+                playTone(TONE_LINE_CLEAR, 200);
             }
         }
 
@@ -4567,6 +4714,7 @@ public class myMainMenu extends Activity {
                 }
                 score(linesThereAreFullRowsTwo);
                 checkLevelUp(linesThereAreFullRowsTwo);
+                playTone(TONE_LINE_CLEAR, 200);
             }
         }
 
@@ -4674,6 +4822,7 @@ public class myMainMenu extends Activity {
 
             MoveAllRight();
             showPieces();
+            playTone(TONE_MOVE, 40);
             busy = false;
             keyPressesEnabled = true;
             return true;
@@ -4822,6 +4971,7 @@ public class myMainMenu extends Activity {
             }
         }
         _score += 3;
+        playTone(TONE_DROP, 80);
         keyPressesEnabled = true;
         launch();
     }
