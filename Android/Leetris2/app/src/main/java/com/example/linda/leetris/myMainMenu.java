@@ -361,7 +361,8 @@ public class myMainMenu extends Activity {
                 R.id.labelVolume, R.id.btnResume, R.id.btnSettings, R.id.btnExit, R.id.btnSettingsBack,
                 R.id.labelHighScore, R.id.highScoresTitle, R.id.btnHighScoresBack,
                 R.id.btnCustomizeControls, R.id.controlsConfigTitle, R.id.controlsConfigSubtitle,
-                R.id.btnResetControls, R.id.btnControlsConfigBack};
+                R.id.btnResetControls, R.id.btnControlsConfigBack,
+                R.id.btnHelp, R.id.helpTitle, R.id.helpBody, R.id.btnHelpBack};
         for (int id : labelIds) {
             View label = findViewById(id);
             if (label instanceof TextView) {
@@ -723,6 +724,26 @@ public class myMainMenu extends Activity {
             @Override
             public void onClick(View view) {
                 resetControlMapping();
+            }
+        });
+
+        Button btnHelp = (Button) findViewById(R.id.btnHelp);
+        btnHelp.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                findViewById(R.id.myScreenMenu).setVisibility(View.GONE);
+                findViewById(R.id.helpScreen).setVisibility(View.VISIBLE);
+            }
+        });
+
+        Button btnHelpBack = (Button) findViewById(R.id.btnHelpBack);
+        btnHelpBack.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                findViewById(R.id.helpScreen).setVisibility(View.GONE);
+                findViewById(R.id.myScreenMenu).setVisibility(View.VISIBLE);
             }
         });
 

@@ -56,6 +56,14 @@
              android:layout_height="wrap_content"
              android:layout_below="@id/btnSettings"
              android:layout_marginTop="16dp"
+             android:text="Help"
+             android:id="@+id/btnHelp" />
+
+         <Button
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_below="@id/btnHelp"
+             android:layout_marginTop="16dp"
              android:text="Exit"
              android:id="@+id/btnExit" />
 
@@ -309,6 +317,50 @@
             android:layout_marginBottom="40dp"
             android:text="Back"
             android:id="@+id/btnControlsConfigBack" />
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_height="fill_parent"
+        android:layout_width="fill_parent"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:visibility="gone"
+        android:id="@+id/helpScreen">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="80dp"
+            android:textSize="28sp"
+            android:text="How to Play"
+            android:id="@+id/helpTitle" />
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/helpTitle"
+            android:layout_above="@id/btnHelpBack"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:lineSpacingExtra="6dp"
+                android:text="Leetris is Tetris in 3D: pieces fall through a 7x7x14 grid instead of a flat board.\n\nGoal: fill an entire row across the grid to clear it and score points.\n\nD-pad: Front/Left/Right/Back moves the falling piece through the grid; the center button hard-drops it.\n\nFlip: the two buttons beside the D-pad rotate the piece&#8217;s shape.\n\nRotate view: use the &#8634; / &#8635; buttons, or swipe left/right on the board, to spin the camera around the grid like a Rubik&#8217;s Cube - see gaps from every angle before you drop.\n\nSettings: adjust sound, volume, and theme, or remap every button to your own layout under Customize Controls."
+                android:id="@+id/helpBody" />
+
+        </ScrollView>
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="40dp"
+            android:text="Back"
+            android:id="@+id/btnHelpBack" />
 
     </RelativeLayout>
     <RelativeLayout
